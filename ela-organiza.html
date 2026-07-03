@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ela organiza">
+<meta name="theme-color" content="#5FB3A8">
+<title>ela organiza</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --primary:#5FB3A8;
+    --primary-dark:#4a9c91;
+    --secondary:#2F6D73;
+    --bg:#F7F8F8;
+    --success:#3AA76D;
+    --alert:#E57A44;
+    --text:#222222;
+    --muted:#8a9491;
+    --logo-dark:#15302D;
+    --card:#ffffff;
+    --border:#ecefee;
+    --radius-lg:22px;
+    --radius-md:16px;
+    --radius-sm:12px;
+    --shadow:0 6px 20px rgba(47,109,115,0.08);
+    --shadow-sm:0 2px 8px rgba(47,109,115,0.06);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit; cursor:pointer;}
+  input, textarea, select{font-family:inherit;}
+
+  .app{
+    max-width:560px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:var(--bg);
+  }
+
+  /* HEADER */
+  header.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 20px 10px;
+    position:sticky;
+    top:0;
+    background:var(--bg);
+    z-index:20;
+  }
+  .brand{display:flex; align-items:center; gap:10px;}
+  .brand-icon{
+    width:40px;height:40px;border-radius:12px;
+    background:linear-gradient(145deg,var(--primary),var(--secondary));
+    position:relative; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:var(--shadow-sm);
+    flex-shrink:0;
+  }
+  .brand-icon .brush{
+    position:absolute; width:44px; height:16px; background:rgba(255,255,255,0.28);
+    border-radius:50%; transform:rotate(-18deg); right:-6px; bottom:8px; filter:blur(1px);
+  }
+  .brand-icon .runner{
+    font-size:22px; position:relative; z-index:1;
+    filter:brightness(0) invert(1);
+    transform:translateY(1px);
+  }
+  .brand-name{
+    display:flex; align-items:baseline; gap:4px;
+    letter-spacing:-0.02em; text-transform:lowercase;
+  }
+  .brand-name .w-ela{font-weight:800; font-size:19px; color:var(--primary);}
+  .brand-name .w-organiza{font-weight:500; font-style:italic; font-size:16px; color:var(--logo-dark);}
+
+  /* HERO BRAND (painel) */
+  .hero-brand{margin:4px 0 24px;}
+  .hero-brand .hero-word{
+    font-size:46px; font-weight:800; color:var(--primary); line-height:0.95;
+    letter-spacing:-0.02em; text-transform:lowercase;
+  }
+  .hero-brand .hero-organiza{
+    font-size:33px; font-weight:500; font-style:italic; color:var(--logo-dark);
+    letter-spacing:-0.01em; margin-top:2px; text-transform:lowercase;
+  }
+  .hero-brand .hero-rule{
+    width:64px; height:2px; background:var(--primary); opacity:0.55; margin:16px 0 10px; border-radius:2px;
+  }
+  .hero-brand .hero-tag{font-size:13.5px; color:var(--text); opacity:0.72;}
+  .hero-brand .hero-tag b{color:var(--secondary); font-weight:600; opacity:1;}
+  .icon-btn{
+    width:38px;height:38px;border-radius:50%;
+    border:none; background:var(--card); box-shadow:var(--shadow-sm);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--secondary);
+  }
+  .icon-btn:active{transform:scale(0.94);}
+
+  main{flex:1; padding:6px 20px 100px;}
+
+  h1.page-title{
+    font-size:22px; font-weight:700; margin:8px 0 18px; letter-spacing:-0.01em;
+  }
+  .view{display:none; animation:fadeIn .25s ease;}
+  .view.active{display:block;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
+
+  /* CARDS */
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:20px;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .stat-card{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:16px;
+  }
+  .stat-card .label{font-size:12.5px; color:var(--muted); font-weight:500; margin-bottom:6px;}
+  .stat-card .value{font-size:20px; font-weight:700; letter-spacing:-0.02em;}
+  .stat-card.success .value{color:var(--success);}
+  .stat-card.alert .value{color:var(--alert);}
+  .stat-card.primary .value{color:var(--secondary);}
+
+  .section-label{
+    font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase;
+    letter-spacing:0.06em; margin:22px 2px 10px;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+
+  /* LIST ITEMS */
+  .faxina-item{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:16px;
+    margin-bottom:10px;
+  }
+  .faxina-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .faxina-cliente{font-weight:600; font-size:15.5px;}
+  .faxina-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .faxina-valor{font-weight:700; font-size:16px; white-space:nowrap;}
+  .badge{
+    display:inline-flex; align-items:center; gap:5px;
+    font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px;
+    margin-top:8px; margin-right:6px;
+  }
+  .badge.recebido{background:rgba(58,167,109,0.12); color:var(--success);}
+  .badge.pendente{background:rgba(229,122,68,0.12); color:var(--alert);}
+  .badge.pessoa{background:rgba(47,109,115,0.1); color:var(--secondary);}
+  .faxina-meta{font-size:12.5px; color:var(--muted); margin-top:8px;}
+  .faxina-obs{font-size:13px; color:var(--text); margin-top:8px; line-height:1.4; opacity:0.85;}
+  .faxina-actions{display:flex; gap:8px; margin-top:12px;}
+  .mini-btn{
+    flex:1; border:none; border-radius:10px; padding:9px 0; font-size:13px; font-weight:600;
+    background:var(--bg); color:var(--secondary);
+  }
+  .mini-btn.danger{color:var(--alert); background:rgba(229,122,68,0.08);}
+  .mini-btn:active{transform:scale(0.97);}
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--muted);
+  }
+  .empty-state .emoji{font-size:38px; margin-bottom:10px; display:block;}
+  .empty-state p{font-size:14px; margin:0; line-height:1.5;}
+
+  /* FILTERS */
+  .filter-row{display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;}
+  .filter-row::-webkit-scrollbar{display:none;}
+  .filter-chip{
+    flex:1; text-align:center; padding:9px 14px; border-radius:999px; border:none;
+    background:var(--card); box-shadow:var(--shadow-sm); font-size:13px; font-weight:600; color:var(--muted);
+    white-space:nowrap;
+  }
+  .filter-chip.active{background:var(--secondary); color:#fff; box-shadow:none;}
+  .filter-row.scroll .filter-chip{flex:none;}
+
+  .select-field{
+    width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    padding:12px 14px; font-size:14px; background:#fff; color:var(--text);
+    margin-bottom:14px; appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a9491' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
+  }
+
+  /* FORM */
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:13px; font-weight:600; color:var(--secondary); margin-bottom:7px;}
+  .field input[type=text], .field input[type=date], .field input[type=number], .field textarea{
+    width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm);
+    padding:13px 14px; font-size:15px; background:#fff; color:var(--text);
+    outline:none; transition:border-color .15s;
+  }
+  .field input:focus, .field textarea:focus{border-color:var(--primary);}
+  .field textarea{resize:vertical; min-height:72px; font-family:inherit;}
+  .toggle-row{display:flex; gap:10px;}
+  .toggle-opt{
+    flex:1; padding:13px 0; border-radius:var(--radius-sm); border:1.5px solid var(--border);
+    text-align:center; font-weight:600; font-size:14px; color:var(--muted); background:#fff;
+  }
+  .toggle-opt.selected.sim{background:rgba(58,167,109,0.1); border-color:var(--success); color:var(--success);}
+  .toggle-opt.selected.nao{background:rgba(229,122,68,0.1); border-color:var(--alert); color:var(--alert);}
+
+  .pessoa-row{display:flex; gap:8px; flex-wrap:wrap;}
+  .pessoa-opt{
+    padding:10px 14px; border-radius:999px; border:1.5px solid var(--border);
+    font-weight:600; font-size:13px; color:var(--muted); background:#fff;
+  }
+  .pessoa-opt.selected{background:var(--secondary); border-color:var(--secondary); color:#fff;}
+
+  .primary-btn{
+    width:100%; border:none; border-radius:var(--radius-sm); padding:16px 0;
+    background:var(--secondary); color:#fff; font-weight:600; font-size:15.5px;
+    box-shadow:0 8px 18px rgba(47,109,115,0.25);
+    margin-top:6px;
+  }
+  .primary-btn:active{transform:scale(0.98);}
+  .secondary-btn{
+    width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 0;
+    background:#fff; color:var(--secondary); font-weight:600; font-size:14.5px; margin-top:10px;
+  }
+
+  /* WEEK NAV */
+  .week-nav{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
+    padding:10px 14px; margin-bottom:16px;
+  }
+  .week-nav button{border:none; background:var(--bg); width:34px; height:34px; border-radius:50%; color:var(--secondary); font-size:16px; display:flex; align-items:center; justify-content:center;}
+  .week-nav .week-label{font-weight:600; font-size:14px; text-align:center;}
+  .week-nav .week-sub{font-size:11.5px; color:var(--muted); text-align:center; margin-top:1px;}
+
+  /* COLABORADOR BREAKDOWN */
+  .colab-item{
+    background:var(--card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
+    padding:14px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .colab-item .nome{font-weight:600; font-size:14.5px;}
+  .colab-item .sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .colab-item .valores{text-align:right;}
+  .colab-item .valores .rec{font-weight:700; font-size:14.5px; color:var(--success);}
+  .colab-item .valores .pen{font-size:11.5px; color:var(--alert); margin-top:2px;}
+
+  /* GASTOS */
+  .gasto-item{
+    background:var(--card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
+    padding:16px; margin-bottom:10px;
+  }
+  .gasto-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .gasto-desc{font-weight:600; font-size:15px;}
+  .gasto-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .gasto-valor{font-weight:700; font-size:16px; color:var(--alert); white-space:nowrap;}
+
+  /* BOTTOM NAV */
+  nav.tabbar{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(255,255,255,0.92);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-top:1px solid var(--border);
+    display:flex;
+    max-width:560px; margin:0 auto;
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom));
+    z-index:30;
+  }
+  .tab-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    background:none; border:none; color:var(--muted); padding:6px 0; border-radius:12px;
+  }
+  .tab-btn svg{width:20px; height:20px;}
+  .tab-btn span{font-size:9.5px; font-weight:600;}
+  .tab-btn.active{color:var(--secondary);}
+
+  /* MODAL */
+  .overlay{
+    position:fixed; inset:0; background:rgba(20,30,29,0.45);
+    display:none; align-items:flex-end; justify-content:center; z-index:100;
+    backdrop-filter:blur(2px);
+  }
+  .overlay.show{display:flex;}
+  .sheet{
+    background:var(--bg); width:100%; max-width:560px;
+    border-radius:26px 26px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    max-height:88vh; overflow-y:auto;
+    animation:slideUp .25s ease;
+  }
+  @keyframes slideUp{from{transform:translateY(30px); opacity:0;} to{transform:translateY(0); opacity:1;}}
+  .sheet-handle{width:38px; height:4px; background:var(--border); border-radius:4px; margin:0 auto 16px;}
+  .sheet h2{font-size:18px; margin:0 0 16px; font-weight:700;}
+  .confirm-text{font-size:14px; color:var(--muted); line-height:1.5; margin-bottom:20px;}
+  .confirm-actions{display:flex; gap:10px;}
+  .confirm-actions button{flex:1; border:none; border-radius:var(--radius-sm); padding:14px 0; font-weight:600; font-size:14.5px;}
+  .btn-cancel{background:#fff; color:var(--text); border:1.5px solid var(--border) !important;}
+  .btn-danger{background:var(--alert); color:#fff;}
+  .sheet .field label{margin-bottom:5px;}
+  .sheet .field input{padding:11px 12px; font-size:14px;}
+
+  .toast{
+    position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--text); color:#fff; padding:12px 20px; border-radius:14px; font-size:13.5px;
+    font-weight:500; opacity:0; pointer-events:none; transition:all .25s ease; z-index:200;
+    max-width:80%; text-align:center;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  @media (min-width:600px){
+    .app{box-shadow:0 0 40px rgba(0,0,0,0.04); min-height:100vh;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon"><div class="brush"></div><span class="runner">🏃‍♀️</span></div>
+      <span class="brand-name"><span class="w-ela">ela.</span><span class="w-organiza">organiza</span></span>
+    </div>
+    <button class="icon-btn" id="btn-settings" aria-label="Definições">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+  </header>
+
+  <main>
+
+    <!-- PAINEL -->
+    <section class="view active" id="view-painel">
+      <div class="hero-brand">
+        <div class="hero-word">ela<span style="color:var(--primary);">.</span></div>
+        <div class="hero-organiza">organiza</div>
+        <div class="hero-rule"></div>
+        <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card success"><div class="label">Valor recebido</div><div class="value" id="p-recebido">€0,00</div></div>
+        <div class="stat-card alert"><div class="label">Valor pendente</div><div class="value" id="p-pendente">€0,00</div></div>
+        <div class="stat-card primary"><div class="label">Horas trabalhadas</div><div class="value" id="p-horas">0h</div></div>
+        <div class="stat-card primary"><div class="label">Faxinas realizadas</div><div class="value" id="p-quantidade">0</div></div>
+        <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="p-gastos">€0,00</div></div>
+        <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="p-liquido">€0,00</div></div>
+      </div>
+
+      <div class="section-label">Por pessoa</div>
+      <div id="p-colaboradores"></div>
+
+      <div class="section-label">Últimos registos</div>
+      <div id="p-ultimos"></div>
+    </section>
+
+    <!-- NOVA FAXINA -->
+    <section class="view" id="view-nova">
+      <h1 class="page-title">nova faxina</h1>
+      <div class="card">
+        <form id="form-faxina">
+          <input type="hidden" id="f-id">
+          <div class="field">
+            <label>Responsável</label>
+            <div class="pessoa-row" id="f-pessoa-row"></div>
+          </div>
+          <div class="field">
+            <label for="f-cliente">Cliente</label>
+            <input type="text" id="f-cliente" placeholder="Nome do cliente" required>
+          </div>
+          <div class="field">
+            <label for="f-data">Data</label>
+            <input type="date" id="f-data" required>
+          </div>
+          <div class="field">
+            <label for="f-horas">Horas</label>
+            <input type="number" id="f-horas" placeholder="Ex: 3" min="0" step="0.5" required>
+          </div>
+          <div class="field">
+            <label for="f-valor">Valor (€)</label>
+            <input type="number" id="f-valor" placeholder="Ex: 45" min="0" step="0.01" required>
+          </div>
+          <div class="field">
+            <label for="f-obs">Observações</label>
+            <textarea id="f-obs" placeholder="Notas sobre o serviço (opcional)"></textarea>
+          </div>
+          <div class="field">
+            <label>Pagamento recebido</label>
+            <div class="toggle-row">
+              <button type="button" class="toggle-opt sim" data-pago="sim">Sim</button>
+              <button type="button" class="toggle-opt nao" data-pago="nao">Não</button>
+            </div>
+          </div>
+          <button type="submit" class="primary-btn" id="btn-guardar">Guardar faxina</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- HISTORICO -->
+    <section class="view" id="view-historico">
+      <h1 class="page-title">histórico</h1>
+      <select class="select-field" id="hist-pessoa"></select>
+      <div class="filter-row">
+        <button class="filter-chip active" data-filter="todas">Todas</button>
+        <button class="filter-chip" data-filter="recebidas">Recebidas</button>
+        <button class="filter-chip" data-filter="pendentes">Pendentes</button>
+      </div>
+      <div id="lista-historico"></div>
+    </section>
+
+    <!-- GASTOS -->
+    <section class="view" id="view-gastos">
+      <h1 class="page-title">gastos gerais</h1>
+      <div class="stat-grid" style="grid-template-columns:1fr;">
+        <div class="stat-card alert"><div class="label">Total em gastos</div><div class="value" id="g-total">€0,00</div></div>
+      </div>
+      <div class="card" style="margin-bottom:20px;">
+        <form id="form-gasto">
+          <input type="hidden" id="g-id">
+          <div class="field">
+            <label for="g-descricao">Descrição</label>
+            <input type="text" id="g-descricao" placeholder="Ex: material de limpeza, km, transporte..." required>
+          </div>
+          <div class="field">
+            <label for="g-data">Data</label>
+            <input type="date" id="g-data" required>
+          </div>
+          <div class="field">
+            <label for="g-valor">Valor do gasto (€)</label>
+            <input type="number" id="g-valor" placeholder="Ex: 12.50" min="0" step="0.01" required>
+          </div>
+          <button type="submit" class="primary-btn" id="btn-guardar-gasto">Guardar gasto</button>
+        </form>
+      </div>
+      <div class="section-label">Registos de gastos</div>
+      <div id="lista-gastos"></div>
+    </section>
+
+    <!-- RELATORIO -->
+    <section class="view" id="view-relatorio">
+      <h1 class="page-title">relatório semanal</h1>
+      <div class="week-nav">
+        <button id="week-prev" aria-label="Semana anterior">‹</button>
+        <div>
+          <div class="week-label" id="week-label">–</div>
+          <div class="week-sub" id="week-sub">–</div>
+        </div>
+        <button id="week-next" aria-label="Semana seguinte">›</button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card primary"><div class="label">Total faturado</div><div class="value" id="r-faturado">€0,00</div></div>
+        <div class="stat-card success"><div class="label">Total recebido</div><div class="value" id="r-recebido">€0,00</div></div>
+        <div class="stat-card alert"><div class="label">Total pendente</div><div class="value" id="r-pendente">€0,00</div></div>
+        <div class="stat-card primary"><div class="label">Horas trabalhadas</div><div class="value" id="r-horas">0h</div></div>
+        <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="r-gastos">€0,00</div></div>
+        <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="r-liquido">€0,00</div></div>
+      </div>
+      <div class="section-label">Faxinas da semana (<span id="r-qtd">0</span>)</div>
+      <div id="lista-relatorio"></div>
+      <div class="section-label">Gastos da semana (<span id="r-qtd-gastos">0</span>)</div>
+      <div id="lista-relatorio-gastos"></div>
+      <button class="primary-btn" id="btn-pdf" style="margin-top:18px;">Exportar PDF</button>
+    </section>
+
+  </main>
+
+  <nav class="tabbar">
+    <button class="tab-btn active" data-view="painel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+      <span>Painel</span>
+    </button>
+    <button class="tab-btn" data-view="nova">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+      <span>Nova</span>
+    </button>
+    <button class="tab-btn" data-view="historico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h11"/></svg>
+      <span>Histórico</span>
+    </button>
+    <button class="tab-btn" data-view="gastos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+      <span>Gastos</span>
+    </button>
+    <button class="tab-btn" data-view="relatorio">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
+      <span>Relatório</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- MODAL OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet-content"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  window.addEventListener('error', function(ev){
+    try{
+      var t = document.getElementById('toast');
+      if(t){
+        t.textContent = 'Ocorreu um erro: ' + (ev && ev.message ? ev.message : 'ver consola');
+        t.classList.add('show');
+        setTimeout(function(){ t.classList.remove('show'); }, 4000);
+      }
+    }catch(e){}
+  });
+  const KEY = "elaOrganizaFaxinas";
+  const KEY_GASTOS = "elaOrganizaGastos";
+  const KEY_COLAB = "elaOrganizaColaboradores";
+
+  let faxinas = JSON.parse(localStorage.getItem(KEY) || "[]");
+  let gastos = JSON.parse(localStorage.getItem(KEY_GASTOS) || "[]");
+  let colaboradores = JSON.parse(localStorage.getItem(KEY_COLAB) || "null") || {
+    eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
+  };
+
+  let historicoFilter = "todas";
+  let historicoPessoa = "todos";
+  let weekOffset = 0;
+  let pagoSelecionado = "sim";
+  let pessoaSelecionada = "eu";
+
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  function persist(){ localStorage.setItem(KEY, JSON.stringify(faxinas)); }
+  function persistGastos(){ localStorage.setItem(KEY_GASTOS, JSON.stringify(gastos)); }
+  function persistColab(){ localStorage.setItem(KEY_COLAB, JSON.stringify(colaboradores)); }
+  function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
+
+  const fmtMoney = (n) => new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR'}).format(n || 0);
+  const fmtDate = (iso) => {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('pt-PT', {day:'2-digit', month:'short', year:'numeric'});
+  };
+  const fmtDateShort = (d) => d.toLocaleDateString('pt-PT', {day:'2-digit', month:'short'});
+  const nomePessoa = (id) => colaboradores[id] || id;
+
+  function toast(msg){
+    const t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
+  }
+
+  /* ---------- NAVIGATION ---------- */
+  function switchView(view){
+    $$('.view').forEach(v => v.classList.remove('active'));
+    $('#view-' + view).classList.add('active');
+    $$('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+    if(view === 'painel') renderPainel();
+    if(view === 'historico') renderHistorico();
+    if(view === 'gastos') renderGastos();
+    if(view === 'relatorio') renderRelatorio();
+    window.scrollTo(0,0);
+  }
+  $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+
+  /* ---------- PESSOA SELECTORS (rendered dynamically so renamed labels show) ---------- */
+  function pessoaIds(){ return ['eu','colab1','colab2','colab3']; }
+
+  function buildFormPessoaRow(){
+    const cont = $('#f-pessoa-row');
+    cont.innerHTML = pessoaIds().map(id =>
+      `<button type="button" class="pessoa-opt${id===pessoaSelecionada?' selected':''}" data-pessoa="${id}">${escapeHTML(nomePessoa(id))}</button>`
+    ).join('');
+    cont.querySelectorAll('.pessoa-opt').forEach(btn => {
+      btn.addEventListener('click', () => {
+        pessoaSelecionada = btn.dataset.pessoa;
+        cont.querySelectorAll('.pessoa-opt').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      });
+    });
+  }
+
+  function buildHistoricoPessoaSelect(){
+    const sel = $('#hist-pessoa');
+    sel.innerHTML = `<option value="todos">Todos os registos</option>` +
+      pessoaIds().map(id => `<option value="${id}">${escapeHTML(nomePessoa(id))}</option>`).join('');
+    sel.value = historicoPessoa;
+  }
+  $('#hist-pessoa').addEventListener('change', (e) => {
+    historicoPessoa = e.target.value;
+    renderHistorico();
+  });
+
+  /* ---------- FORM: NOVA / EDITAR FAXINA ---------- */
+  const form = $('#form-faxina');
+  $$('.toggle-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      pagoSelecionado = btn.dataset.pago;
+      $$('.toggle-opt').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+    });
+  });
+
+  function resetForm(){
+    form.reset();
+    $('#f-id').value = '';
+    $('#f-data').value = new Date().toISOString().slice(0,10);
+    pagoSelecionado = 'sim';
+    pessoaSelecionada = 'eu';
+    $$('.toggle-opt').forEach(b => b.classList.remove('selected'));
+    $('.toggle-opt.sim').classList.add('selected');
+    buildFormPessoaRow();
+    $('#btn-guardar').textContent = 'Guardar faxina';
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = $('#f-id').value;
+    const registo = {
+      id: id || uid(),
+      pessoa: pessoaSelecionada,
+      cliente: $('#f-cliente').value.trim(),
+      data: $('#f-data').value,
+      horas: parseFloat($('#f-horas').value) || 0,
+      valor: parseFloat($('#f-valor').value) || 0,
+      observacoes: $('#f-obs').value.trim(),
+      pago: pagoSelecionado === 'sim',
+      createdAt: id ? ((faxinas.find(f=>f.id===id) || {}).createdAt || Date.now()) : Date.now()
+    };
+    if(id){
+      faxinas = faxinas.map(f => f.id === id ? registo : f);
+      toast('Faxina atualizada');
+    } else {
+      faxinas.push(registo);
+      toast('Faxina guardada');
+    }
+    persist();
+    resetForm();
+    switchView('historico');
+  });
+
+  function editarFaxina(id){
+    const f = faxinas.find(x => x.id === id);
+    if(!f) return;
+    $('#f-id').value = f.id;
+    $('#f-cliente').value = f.cliente;
+    $('#f-data').value = f.data;
+    $('#f-horas').value = f.horas;
+    $('#f-valor').value = f.valor;
+    $('#f-obs').value = f.observacoes;
+    pagoSelecionado = f.pago ? 'sim' : 'nao';
+    pessoaSelecionada = f.pessoa || 'eu';
+    $$('.toggle-opt').forEach(b => b.classList.remove('selected'));
+    $(f.pago ? '.toggle-opt.sim' : '.toggle-opt.nao').classList.add('selected');
+    buildFormPessoaRow();
+    $('#btn-guardar').textContent = 'Atualizar faxina';
+    switchView('nova');
+  }
+
+  /* ---------- PAINEL ---------- */
+  function renderPainel(){
+    const recebido = faxinas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+    const pendente = faxinas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
+    const horas = faxinas.reduce((s,f)=>s+f.horas,0);
+    const totalGastos = gastos.reduce((s,g)=>s+g.valor,0);
+    $('#p-recebido').textContent = fmtMoney(recebido);
+    $('#p-pendente').textContent = fmtMoney(pendente);
+    $('#p-horas').textContent = horas.toLocaleString('pt-PT') + 'h';
+    $('#p-quantidade').textContent = faxinas.length;
+    $('#p-gastos').textContent = fmtMoney(totalGastos);
+    $('#p-liquido').textContent = fmtMoney(recebido - totalGastos);
+
+    const contColab = $('#p-colaboradores');
+    contColab.innerHTML = pessoaIds().map(id => {
+      const lista = faxinas.filter(f => (f.pessoa || 'eu') === id);
+      const rec = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+      const pen = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
+      return `
+      <div class="colab-item">
+        <div>
+          <div class="nome">${escapeHTML(nomePessoa(id))}</div>
+          <div class="sub">${lista.length} faxina${lista.length===1?'':'s'}</div>
+        </div>
+        <div class="valores">
+          <div class="rec">${fmtMoney(rec)}</div>
+          ${pen > 0 ? `<div class="pen">${fmtMoney(pen)} pendente</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+
+    const ultimos = [...faxinas].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
+    const cont = $('#p-ultimos');
+    if(ultimos.length === 0){
+      cont.innerHTML = emptyState('📋','Ainda não há faxinas registadas.<br>Toca em “Nova” para começar.');
+      return;
+    }
+    cont.innerHTML = ultimos.map(f => faxinaCardHTML(f, false)).join('');
+  }
+
+  function emptyState(emoji, text){
+    return `<div class="empty-state"><span class="emoji">${emoji}</span><p>${text}</p></div>`;
+  }
+
+  function faxinaCardHTML(f, withActions){
+    const pessoaId = f.pessoa || 'eu';
+    return `
+    <div class="faxina-item">
+      <div class="faxina-top">
+        <div>
+          <div class="faxina-cliente">${escapeHTML(f.cliente)}</div>
+          <div class="faxina-data">${fmtDate(f.data)} · ${f.horas}h</div>
+        </div>
+        <div class="faxina-valor">${fmtMoney(f.valor)}</div>
+      </div>
+      ${f.observacoes ? `<div class="faxina-obs">${escapeHTML(f.observacoes)}</div>` : ''}
+      <div>
+        <span class="badge pessoa">${escapeHTML(nomePessoa(pessoaId))}</span>
+        <span class="badge ${f.pago ? 'recebido' : 'pendente'}">${f.pago ? '✓ Recebido' : '● Pendente'}</span>
+      </div>
+      ${withActions ? `
+      <div class="faxina-actions">
+        <button class="mini-btn" onclick="window.__editar('${f.id}')">Editar</button>
+        <button class="mini-btn danger" onclick="window.__apagar('${f.id}')">Apagar</button>
+      </div>` : ''}
+    </div>`;
+  }
+
+  function escapeHTML(str){
+    const d = document.createElement('div');
+    d.textContent = str || '';
+    return d.innerHTML;
+  }
+
+  /* ---------- HISTORICO ---------- */
+  $$('.filter-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      historicoFilter = chip.dataset.filter;
+      $$('.filter-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      renderHistorico();
+    });
+  });
+
+  function renderHistorico(){
+    let lista = [...faxinas].sort((a,b)=> new Date(b.data) - new Date(a.data));
+    if(historicoFilter === 'recebidas') lista = lista.filter(f=>f.pago);
+    if(historicoFilter === 'pendentes') lista = lista.filter(f=>!f.pago);
+    if(historicoPessoa !== 'todos') lista = lista.filter(f => (f.pessoa || 'eu') === historicoPessoa);
+    const cont = $('#lista-historico');
+    if(lista.length === 0){
+      cont.innerHTML = emptyState('🧺','Nenhuma faxina encontrada nesta categoria.');
+      return;
+    }
+    cont.innerHTML = lista.map(f => faxinaCardHTML(f, true)).join('');
+  }
+
+  window.__editar = editarFaxina;
+  window.__apagar = (id) => confirmarApagar(id);
+
+  function confirmarApagar(id){
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Apagar registo</h2>
+      <p class="confirm-text">Tem a certeza de que pretende apagar esta faxina? Esta ação não pode ser desfeita.</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" id="sheet-cancel">Cancelar</button>
+        <button class="btn-danger" id="sheet-confirm">Apagar</button>
+      </div>
+    `);
+    $('#sheet-cancel').addEventListener('click', closeSheet);
+    $('#sheet-confirm').addEventListener('click', () => {
+      faxinas = faxinas.filter(f => f.id !== id);
+      persist();
+      closeSheet();
+      renderHistorico();
+      renderPainel();
+      toast('Faxina apagada');
+    });
+  }
+
+  /* ---------- GASTOS GERAIS ---------- */
+  const formGasto = $('#form-gasto');
+
+  function resetFormGasto(){
+    formGasto.reset();
+    $('#g-id').value = '';
+    $('#g-data').value = new Date().toISOString().slice(0,10);
+    $('#btn-guardar-gasto').textContent = 'Guardar gasto';
+  }
+
+  formGasto.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = $('#g-id').value;
+    const registo = {
+      id: id || uid(),
+      descricao: $('#g-descricao').value.trim(),
+      data: $('#g-data').value,
+      valor: parseFloat($('#g-valor').value) || 0,
+      createdAt: id ? ((gastos.find(g=>g.id===id) || {}).createdAt || Date.now()) : Date.now()
+    };
+    if(id){
+      gastos = gastos.map(g => g.id === id ? registo : g);
+      toast('Gasto atualizado');
+    } else {
+      gastos.push(registo);
+      toast('Gasto guardado');
+    }
+    persistGastos();
+    resetFormGasto();
+    renderGastos();
+  });
+
+  function gastoCardHTML(g){
+    return `
+    <div class="gasto-item">
+      <div class="gasto-top">
+        <div>
+          <div class="gasto-desc">${escapeHTML(g.descricao)}</div>
+          <div class="gasto-data">${fmtDate(g.data)}</div>
+        </div>
+        <div class="gasto-valor">- ${fmtMoney(g.valor)}</div>
+      </div>
+      <div class="faxina-actions">
+        <button class="mini-btn" onclick="window.__editarGasto('${g.id}')">Editar</button>
+        <button class="mini-btn danger" onclick="window.__apagarGasto('${g.id}')">Apagar</button>
+      </div>
+    </div>`;
+  }
+
+  function renderGastos(){
+    const total = gastos.reduce((s,g)=>s+g.valor,0);
+    $('#g-total').textContent = fmtMoney(total);
+    const lista = [...gastos].sort((a,b)=> new Date(b.data) - new Date(a.data));
+    const cont = $('#lista-gastos');
+    cont.innerHTML = lista.length === 0
+      ? emptyState('🧾','Ainda não há gastos registados.')
+      : lista.map(gastoCardHTML).join('');
+  }
+
+  window.__editarGasto = (id) => {
+    const g = gastos.find(x => x.id === id);
+    if(!g) return;
+    $('#g-id').value = g.id;
+    $('#g-descricao').value = g.descricao;
+    $('#g-data').value = g.data;
+    $('#g-valor').value = g.valor;
+    $('#btn-guardar-gasto').textContent = 'Atualizar gasto';
+    switchView('gastos');
+    window.scrollTo({top: $('#form-gasto').offsetTop - 80, behavior:'smooth'});
+  };
+
+  window.__apagarGasto = (id) => {
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Apagar gasto</h2>
+      <p class="confirm-text">Tem a certeza de que pretende apagar este gasto? Esta ação não pode ser desfeita.</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" id="sheet-cancel3">Cancelar</button>
+        <button class="btn-danger" id="sheet-confirm3">Apagar</button>
+      </div>
+    `);
+    $('#sheet-cancel3').addEventListener('click', closeSheet);
+    $('#sheet-confirm3').addEventListener('click', () => {
+      gastos = gastos.filter(g => g.id !== id);
+      persistGastos();
+      closeSheet();
+      renderGastos();
+      renderPainel();
+      toast('Gasto apagado');
+    });
+  };
+
+  /* ---------- RELATORIO SEMANAL ---------- */
+  function getWeekRange(offset){
+    const now = new Date();
+    const day = now.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+    const monday = new Date(now);
+    monday.setHours(0,0,0,0);
+    monday.setDate(now.getDate() + diffToMonday + offset*7);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    sunday.setHours(23,59,59,999);
+    return {monday, sunday};
+  }
+
+  function dentroDaSemana(dataIso, monday, sunday){
+    const d = new Date(dataIso + 'T12:00:00');
+    return d >= monday && d <= sunday;
+  }
+
+  function renderRelatorio(){
+    const {monday, sunday} = getWeekRange(weekOffset);
+    $('#week-label').textContent = `${fmtDateShort(monday)} – ${fmtDateShort(sunday)}`;
+    $('#week-sub').textContent = weekOffset === 0 ? 'Esta semana' : (weekOffset < 0 ? `${Math.abs(weekOffset)} semana(s) atrás` : `Daqui a ${weekOffset} semana(s)`);
+
+    const lista = faxinas.filter(f => dentroDaSemana(f.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
+    const listaGastos = gastos.filter(g => dentroDaSemana(g.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
+
+    const faturado = lista.reduce((s,f)=>s+f.valor,0);
+    const recebido = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+    const pendente = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
+    const horas = lista.reduce((s,f)=>s+f.horas,0);
+    const totalGastosSemana = listaGastos.reduce((s,g)=>s+g.valor,0);
+
+    $('#r-faturado').textContent = fmtMoney(faturado);
+    $('#r-recebido').textContent = fmtMoney(recebido);
+    $('#r-pendente').textContent = fmtMoney(pendente);
+    $('#r-horas').textContent = horas.toLocaleString('pt-PT') + 'h';
+    $('#r-gastos').textContent = fmtMoney(totalGastosSemana);
+    $('#r-liquido').textContent = fmtMoney(recebido - totalGastosSemana);
+    $('#r-qtd').textContent = lista.length;
+    $('#r-qtd-gastos').textContent = listaGastos.length;
+
+    $('#lista-relatorio').innerHTML = lista.length === 0
+      ? emptyState('📅','Sem faxinas registadas nesta semana.')
+      : lista.map(f => faxinaCardHTML(f, false)).join('');
+
+    $('#lista-relatorio-gastos').innerHTML = listaGastos.length === 0
+      ? emptyState('🧾','Sem gastos registados nesta semana.')
+      : listaGastos.map(gastoCardHTML).join('');
+
+    window.__weekData = {monday, sunday, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosSemana};
+  }
+
+  $('#week-prev').addEventListener('click', () => { weekOffset--; renderRelatorio(); });
+  $('#week-next').addEventListener('click', () => { weekOffset++; renderRelatorio(); });
+
+  /* ---------- PDF EXPORT ---------- */
+  function loadJsPDF(cb){
+    if(window.jspdf){ cb(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = cb;
+    s.onerror = () => toast('Não foi possível carregar o gerador de PDF. Verifique a ligação à internet.');
+    document.head.appendChild(s);
+  }
+
+  $('#btn-pdf').addEventListener('click', () => {
+    loadJsPDF(gerarPDF);
+  });
+
+  function gerarPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+    const { monday, sunday, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosSemana } = window.__weekData;
+
+    const marginX = 16;
+    let y = 20;
+
+    doc.setFillColor(47, 109, 115);
+    doc.roundedRect(marginX, y - 10, 22, 22, 4, 4, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('ela.', marginX + 11, y - 2, {align:'center'});
+    doc.setFontSize(6.5);
+    doc.setFont('helvetica','normal');
+    doc.text('organiza', marginX + 11, y + 4, {align:'center'});
+
+    doc.setTextColor(34,34,34);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(16);
+    doc.text('ela organiza', marginX + 28, y - 3);
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(10);
+    doc.setTextColor(120,120,120);
+    doc.text('Relatório semanal de faxinas', marginX + 28, y + 3);
+
+    y += 20;
+    doc.setDrawColor(230,230,230);
+    doc.line(marginX, y, 210 - marginX, y);
+    y += 10;
+
+    doc.setTextColor(47,109,115);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(12);
+    doc.text(`Semana: ${monday.toLocaleDateString('pt-PT')} a ${sunday.toLocaleDateString('pt-PT')}`, marginX, y);
+    y += 10;
+
+    const totals = [
+      ['Total faturado', fmtMoney(faturado)],
+      ['Total recebido', fmtMoney(recebido)],
+      ['Total pendente', fmtMoney(pendente)],
+      ['Horas trabalhadas', horas.toLocaleString('pt-PT') + 'h'],
+      ['Gastos gerais', fmtMoney(totalGastosSemana)],
+      ['Valor líquido', fmtMoney(recebido - totalGastosSemana)],
+      ['Faxinas realizadas', String(lista.length)]
+    ];
+    doc.setFontSize(10);
+    totals.forEach((row, i) => {
+      const rowY = y + i*7;
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(90,90,90);
+      doc.text(row[0], marginX, rowY);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(34,34,34);
+      doc.text(row[1], 210 - marginX, rowY, {align:'right'});
+    });
+    y += totals.length*7 + 8;
+
+    doc.setDrawColor(230,230,230);
+    doc.line(marginX, y, 210 - marginX, y);
+    y += 8;
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.setTextColor(47,109,115);
+    doc.text('Faxinas da semana', marginX, y);
+    y += 7;
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(120,120,120);
+    doc.text('Responsável', marginX, y);
+    doc.text('Cliente', marginX + 32, y);
+    doc.text('Data', marginX + 78, y);
+    doc.text('Horas', marginX + 100, y);
+    doc.text('Estado', marginX + 118, y);
+    doc.text('Valor', 210 - marginX, y, {align:'right'});
+    y += 4;
+    doc.setDrawColor(230,230,230);
+    doc.line(marginX, y, 210 - marginX, y);
+    y += 6;
+
+    if(lista.length === 0){
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(150,150,150);
+      doc.text('Sem faxinas registadas nesta semana.', marginX, y);
+      y += 8;
+    } else {
+      lista.forEach(f => {
+        if(y > 275){ doc.addPage(); y = 20; }
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(34,34,34);
+        doc.text(String(nomePessoa(f.pessoa || 'eu')).slice(0,16), marginX, y);
+        doc.text(String(f.cliente).slice(0,20), marginX + 32, y);
+        doc.text(fmtDate(f.data), marginX + 78, y);
+        doc.text(String(f.horas) + 'h', marginX + 100, y);
+        doc.setTextColor(f.pago ? 58 : 229, f.pago ? 167 : 122, f.pago ? 109 : 68);
+        doc.text(f.pago ? 'Recebido' : 'Pendente', marginX + 118, y);
+        doc.setTextColor(34,34,34);
+        doc.text(fmtMoney(f.valor), 210 - marginX, y, {align:'right'});
+        y += 7;
+      });
+    }
+
+    y += 6;
+    if(y > 265){ doc.addPage(); y = 20; }
+    doc.setDrawColor(230,230,230);
+    doc.line(marginX, y, 210 - marginX, y);
+    y += 8;
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.setTextColor(47,109,115);
+    doc.text('Gastos gerais da semana', marginX, y);
+    y += 7;
+
+    if(listaGastos.length === 0){
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(150,150,150);
+      doc.text('Sem gastos registados nesta semana.', marginX, y);
+      y += 8;
+    } else {
+      doc.setFontSize(9);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(120,120,120);
+      doc.text('Descrição', marginX, y);
+      doc.text('Data', marginX + 110, y);
+      doc.text('Valor', 210 - marginX, y, {align:'right'});
+      y += 4;
+      doc.setDrawColor(230,230,230);
+      doc.line(marginX, y, 210 - marginX, y);
+      y += 6;
+      listaGastos.forEach(g => {
+        if(y > 275){ doc.addPage(); y = 20; }
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(34,34,34);
+        doc.text(String(g.descricao).slice(0,44), marginX, y);
+        doc.text(fmtDate(g.data), marginX + 110, y);
+        doc.setTextColor(229,122,68);
+        doc.text('- ' + fmtMoney(g.valor), 210 - marginX, y, {align:'right'});
+        y += 7;
+      });
+    }
+
+    doc.setFontSize(8);
+    doc.setTextColor(170,170,170);
+    doc.text('Gerado por ela organiza · ' + new Date().toLocaleDateString('pt-PT'), marginX, 290);
+
+    const fileName = `relatorio-ela-organiza-${monday.toISOString().slice(0,10)}.pdf`;
+    doc.save(fileName);
+  }
+
+  /* ---------- SETTINGS / COLABORADORES / LIMPAR DADOS ---------- */
+  function openSheet(html){
+    $('#sheet-content').innerHTML = html;
+    $('#overlay').classList.add('show');
+  }
+  function closeSheet(){
+    $('#overlay').classList.remove('show');
+  }
+  $('#overlay').addEventListener('click', (e) => { if(e.target.id === 'overlay') closeSheet(); });
+
+  $('#btn-settings').addEventListener('click', () => {
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Definições</h2>
+      <p class="confirm-text">ela organiza guarda todos os registos apenas neste dispositivo, sem necessidade de internet ou conta.</p>
+      <div class="field"><label for="s-colab1">Nome do colaborador 1</label><input type="text" id="s-colab1" value="${escapeHTML(colaboradores.colab1)}"></div>
+      <div class="field"><label for="s-colab2">Nome do colaborador 2</label><input type="text" id="s-colab2" value="${escapeHTML(colaboradores.colab2)}"></div>
+      <div class="field"><label for="s-colab3">Nome do colaborador 3</label><input type="text" id="s-colab3" value="${escapeHTML(colaboradores.colab3)}"></div>
+      <button class="primary-btn" id="sheet-salvar-nomes">Guardar nomes</button>
+      <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Limpar todos os dados</button>
+      <button class="secondary-btn" id="sheet-fechar">Fechar</button>
+    `);
+    $('#sheet-fechar').addEventListener('click', closeSheet);
+    $('#sheet-limpar').addEventListener('click', confirmarLimparTudo);
+    $('#sheet-salvar-nomes').addEventListener('click', () => {
+      colaboradores.colab1 = $('#s-colab1').value.trim() || 'Colaborador 1';
+      colaboradores.colab2 = $('#s-colab2').value.trim() || 'Colaborador 2';
+      colaboradores.colab3 = $('#s-colab3').value.trim() || 'Colaborador 3';
+      persistColab();
+      buildFormPessoaRow();
+      buildHistoricoPessoaSelect();
+      renderPainel();
+      closeSheet();
+      toast('Nomes atualizados');
+    });
+  });
+
+  function confirmarLimparTudo(){
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Limpar todos os dados</h2>
+      <p class="confirm-text">Tem a certeza de que pretende apagar todos os registos? Esta ação não pode ser desfeita.</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" id="sheet-cancel2">Cancelar</button>
+        <button class="btn-danger" id="sheet-confirm2">Apagar tudo</button>
+      </div>
+    `);
+    $('#sheet-cancel2').addEventListener('click', closeSheet);
+    $('#sheet-confirm2').addEventListener('click', () => {
+      faxinas = [];
+      gastos = [];
+      persist();
+      persistGastos();
+      closeSheet();
+      renderPainel();
+      renderHistorico();
+      renderGastos();
+      renderRelatorio();
+      toast('Todos os dados foram apagados');
+    });
+  }
+
+  /* ---------- INIT ---------- */
+  buildHistoricoPessoaSelect();
+  resetForm();
+  resetFormGasto();
+  renderPainel();
+})();
+</script>
+</body>
+</html>

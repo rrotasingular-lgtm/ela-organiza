@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
@@ -325,12 +325,57 @@
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
 
+  .gate{
+    position:fixed; inset:0; z-index:500; background:var(--bg);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+    transition:opacity .25s ease, visibility .25s ease;
+  }
+  .gate-hidden{opacity:0; visibility:hidden; pointer-events:none;}
+  .gate-card{width:100%; max-width:360px; text-align:center;}
+  .gate-brand{font-size:26px; font-weight:800; margin-bottom:6px;}
+  .gate-brand .w-ela{color:var(--primary);}
+  .gate-brand .w-organiza{color:var(--logo-dark); font-style:italic;}
+  .gate-sub{font-size:13.5px; color:var(--muted); margin-bottom:24px; line-height:1.5;}
+  .gate-card input{
+    width:100%; padding:14px 16px; border-radius:var(--radius-sm); border:1.5px solid var(--border);
+    font-size:15px; margin-bottom:14px; text-align:center;
+  }
+  .gate-card button{width:100%;}
+  .gate-error{color:var(--alert); font-size:12.5px; margin:-6px 0 12px; text-align:left;}
+
+  .backup-banner{
+    display:flex; align-items:center; gap:12px; background:#FFF4EC; border:1.5px solid #F3D4B8;
+    border-radius:var(--radius-sm); padding:14px; margin-bottom:18px;
+  }
+  .backup-banner-text{display:flex; flex-direction:column; gap:3px; flex:1;}
+  .backup-banner-text strong{font-size:13.5px; color:var(--text);}
+  .backup-banner-text span{font-size:12px; color:var(--muted); line-height:1.4;}
+  .backup-banner button{
+    background:var(--secondary); color:#fff; border:none; border-radius:10px;
+    padding:9px 12px; font-size:12px; font-weight:600; white-space:nowrap;
+  }
+
+  .help-block{background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px;}
+  .help-block h3{font-size:14px; margin:0 0 6px; color:var(--secondary);}
+  .help-block p{font-size:13px; color:var(--text); line-height:1.55; margin:0;}
+
   @media (min-width:600px){
     .app{box-shadow:0 0 40px rgba(0,0,0,0.04); min-height:100vh;}
   }
 </style>
 </head>
 <body>
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-brand"><span class="w-ela">ela.</span><span class="w-organiza">organiza</span></div>
+    <p class="gate-sub">Digita a tua chave para aceder aos teus registos. Formato: <strong>ela.</strong> + o teu nome. Ex: ela.carla</p>
+    <form id="gate-form">
+      <input type="text" id="gate-input" placeholder="ela.carla" value="ela." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <p id="gate-error" class="gate-error" style="display:none;"></p>
+      <button type="submit" class="primary-btn">Entrar</button>
+    </form>
+  </div>
+</div>
 <div class="app">
 
   <header class="topbar">
@@ -352,6 +397,14 @@
         <div class="hero-organiza">organiza</div>
         <div class="hero-rule"></div>
         <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
+      </div>
+
+      <div class="backup-banner" id="backup-banner" style="display:none;">
+        <div class="backup-banner-text">
+          <strong>Lembrete de backup</strong>
+          <span>Já faz mais de uma semana desde o teu último backup. Exporta os teus dados para não os perderes.</span>
+        </div>
+        <button type="button" id="backup-banner-btn">Exportar agora</button>
       </div>
       <div class="stat-grid">
         <div class="stat-card success"><div class="label">Valor recebido</div><div class="value" id="p-recebido">€0,00</div></div>
@@ -477,6 +530,46 @@
       <button class="primary-btn" id="btn-pdf" style="margin-top:18px;">Exportar PDF</button>
     </section>
 
+    <!-- AJUDA / MANUAL -->
+    <section class="view" id="view-ajuda">
+      <h1 class="page-title">manual rápido</h1>
+
+      <div class="help-block">
+        <h3>1. A tua chave</h3>
+        <p>Cada pessoa entra com a sua própria chave, no formato <strong>ela.nome</strong> (ex: ela.carla). Cada chave guarda os dados separadamente — ninguém vê os registos de outra pessoa, mesmo no mesmo telemóvel.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>2. Registar uma faxina</h3>
+        <p>Vai à aba <strong>Nova</strong>, preenche cliente, data, horas, valor e se já foi pago, e toca em guardar. Aparece logo no Painel e no Histórico.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>3. Gastos gerais</h3>
+        <p>Na aba <strong>Gastos</strong> podes registar despesas do trabalho (materiais, transporte, etc.) que entram no cálculo do valor líquido.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>4. Relatório semanal</h3>
+        <p>Mostra o resumo da semana e permite exportar um PDF para enviar ou imprimir.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>5. Backup — muito importante</h3>
+        <p>Os dados ficam guardados só neste telemóvel. Se perderes ou trocares de aparelho, os dados não vêm sozinhos. Por isso, <strong>uma vez por semana</strong>, vai a Definições → <strong>Exportar dados (backup)</strong> e guarda o ficheiro num local seguro (Ficheiros, e-mail para ti mesma, etc.). Quando aparecer o aviso laranja no Painel, é sinal de que já passou uma semana sem backup.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>6. Trocar de telemóvel</h3>
+        <p>No telemóvel antigo, exporta o backup. No telemóvel novo, entra com a mesma chave e, em Definições → <strong>Importar dados de um backup</strong>, escolhe o ficheiro. O histórico completo aparece de volta.</p>
+      </div>
+
+      <div class="help-block">
+        <h3>7. Trocar de utilizador</h3>
+        <p>Se emprestares o telemóvel a outra pessoa, usa <strong>Definições → Trocar de utilizador</strong> para sair da tua chave e deixar a outra pessoa entrar com a dela.</p>
+      </div>
+    </section>
+
   </main>
 
   <nav class="tabbar">
@@ -499,6 +592,10 @@
     <button class="tab-btn" data-view="relatorio">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
       <span>Relatório</span>
+    </button>
+    <button class="tab-btn" data-view="ajuda">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2 1.8-2 3.5"/><path d="M12 17h.01"/></svg>
+      <span>Ajuda</span>
     </button>
   </nav>
 
@@ -524,17 +621,102 @@
       }
     }catch(e){}
   });
-  const KEY = "elaOrganizaFaxinas";
-  const KEY_GASTOS = "elaOrganizaGastos";
-  const KEY_COLAB = "elaOrganizaColaboradores";
+  let KEY = "elaOrganizaFaxinas";
+  let KEY_GASTOS = "elaOrganizaGastos";
+  let KEY_COLAB = "elaOrganizaColaboradores";
+  let KEY_BACKUP = "elaOrganizaUltimoBackup";
+  let KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso";
+  const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
+  const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
+  const KEY_MIGRADO = "elaOrganizaMigrado";
 
-  let faxinas = JSON.parse(localStorage.getItem(KEY) || "[]");
-  let gastos = JSON.parse(localStorage.getItem(KEY_GASTOS) || "[]");
-  let colaboradores = JSON.parse(localStorage.getItem(KEY_COLAB) || "null") || {
-    eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
-  };
+  /* Armazenamento seguro: em alguns contextos (ex: ficheiro .html aberto
+     diretamente no iPhone via Ficheiros/AirDrop/Mail, origem file://) o
+     Safari bloqueia o acesso a localStorage e lança uma exceção. Sem este
+     wrapper, essa exceção pararia a execução do script logo no arranque,
+     antes de qualquer botão ser ligado. Aqui, se localStorage falhar,
+     usamos memória (os dados não persistem entre sessões, mas a app
+     continua a funcionar). */
+  let storageBlocked = false;
+  const memoryStore = {};
+  function storageGet(key){
+    try{ return localStorage.getItem(key); }
+    catch(e){ storageBlocked = true; return (key in memoryStore) ? memoryStore[key] : null; }
+  }
+  function storageSet(key, value){
+    try{ localStorage.setItem(key, value); }
+    catch(e){ storageBlocked = true; memoryStore[key] = value; }
+  }
 
-  let historicoFilter = "todas";
+  let faxinas = [];
+  let gastos = [];
+  let colaboradores = { eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3" };
+
+  /* ---------- CHAVE DE UTILIZADOR ----------
+     Cada "chave" tem os seus próprios dados, guardados sob um prefixo
+     próprio nas chaves de armazenamento. Isto permite que o mesmo link
+     (ou até o mesmo aparelho) seja usado por várias pessoas sem misturar
+     faxinas, gastos ou colaboradores de cada uma. */
+  function slugify(txt){
+    return (txt || "")
+      .toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "utilizador";
+  }
+
+  function carregarDados(){
+    faxinas = JSON.parse(storageGet(KEY) || "[]");
+    gastos = JSON.parse(storageGet(KEY_GASTOS) || "[]");
+    colaboradores = JSON.parse(storageGet(KEY_COLAB) || "null") || {
+      eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
+    };
+  }
+
+  function iniciarApp(chaveOriginal){
+    const slug = slugify(chaveOriginal);
+    KEY = "elaOrganizaFaxinas::" + slug;
+    KEY_GASTOS = "elaOrganizaGastos::" + slug;
+    KEY_COLAB = "elaOrganizaColaboradores::" + slug;
+    KEY_BACKUP = "elaOrganizaUltimoBackup::" + slug;
+    KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso::" + slug;
+    if(!storageGet(KEY_PRIMEIRO_USO)) storageSet(KEY_PRIMEIRO_USO, new Date().toISOString());
+
+    // Migração única: se esta é a primeira vez que uma chave é usada neste
+    // aparelho e já existiam dados antigos (sem chave), passamos esses
+    // dados para a primeira chave criada, para não perder nada.
+    if(!storageGet(KEY_MIGRADO)){
+      const legadoFaxinas = storageGet("elaOrganizaFaxinas");
+      const legadoGastos = storageGet("elaOrganizaGastos");
+      const legadoColab = storageGet("elaOrganizaColaboradores");
+      if(legadoFaxinas) storageSet(KEY, legadoFaxinas);
+      if(legadoGastos) storageSet(KEY_GASTOS, legadoGastos);
+      if(legadoColab) storageSet(KEY_COLAB, legadoColab);
+      storageSet(KEY_MIGRADO, "1");
+    }
+
+    storageSet(KEY_CHAVE_ATIVA, slug);
+    storageSet(KEY_CHAVE_LABEL, chaveOriginal.trim());
+    carregarDados();
+
+    const gate = document.getElementById('gate');
+    if(gate) gate.classList.add('gate-hidden');
+
+    buildHistoricoPessoaSelect();
+    resetForm();
+    resetFormGasto();
+    renderPainel();
+    if(storageBlocked){
+      setTimeout(() => toast('Aviso: guardar dados não está disponível a abrir o ficheiro diretamente. Instale a app através de um servidor/link para guardar os registos.'), 600);
+    }
+  }
+
+  function trocarUtilizador(){
+    storageSet(KEY_CHAVE_ATIVA, "");
+    location.reload();
+  }
+
+
   let historicoPessoa = "todos";
   let weekOffset = 0;
   let pagoSelecionado = "sim";
@@ -543,9 +725,9 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
 
-  function persist(){ localStorage.setItem(KEY, JSON.stringify(faxinas)); }
-  function persistGastos(){ localStorage.setItem(KEY_GASTOS, JSON.stringify(gastos)); }
-  function persistColab(){ localStorage.setItem(KEY_COLAB, JSON.stringify(colaboradores)); }
+  function persist(){ storageSet(KEY, JSON.stringify(faxinas)); }
+  function persistGastos(){ storageSet(KEY_GASTOS, JSON.stringify(gastos)); }
+  function persistColab(){ storageSet(KEY_COLAB, JSON.stringify(colaboradores)); }
   function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
 
   const fmtMoney = (n) => new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR'}).format(n || 0);
@@ -576,6 +758,8 @@
     window.scrollTo(0,0);
   }
   $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+  const backupBannerBtn = document.getElementById('backup-banner-btn');
+  if(backupBannerBtn) backupBannerBtn.addEventListener('click', exportarDados);
 
   /* ---------- PESSOA SELECTORS (rendered dynamically so renamed labels show) ---------- */
   function pessoaIds(){ return ['eu','colab1','colab2','colab3']; }
@@ -672,7 +856,17 @@
   }
 
   /* ---------- PAINEL ---------- */
+  function atualizarBannerBackup(){
+    const banner = document.getElementById('backup-banner');
+    if(!banner) return;
+    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
+    if(!referencia){ banner.style.display = 'none'; return; }
+    const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
+    banner.style.display = (dias >= 7 && faxinas.length > 0) ? 'flex' : 'none';
+  }
+
   function renderPainel(){
+    atualizarBannerBackup();
     const recebido = faxinas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const pendente = faxinas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
     const horas = faxinas.reduce((s,f)=>s+f.horas,0);
@@ -1119,19 +1313,28 @@
   $('#overlay').addEventListener('click', (e) => { if(e.target.id === 'overlay') closeSheet(); });
 
   $('#btn-settings').addEventListener('click', () => {
+    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || '';
     openSheet(`
       <div class="sheet-handle"></div>
       <h2>Definições</h2>
-      <p class="confirm-text">ela organiza guarda todos os registos apenas neste dispositivo, sem necessidade de internet ou conta.</p>
+      <p class="confirm-text">ela organiza guarda todos os registos apenas neste dispositivo, sem necessidade de internet ou conta.${chaveAtual ? ' A tua chave atual é <strong>' + escapeHTML(chaveAtual) + '</strong>.' : ''}</p>
       <div class="field"><label for="s-colab1">Nome do colaborador 1</label><input type="text" id="s-colab1" value="${escapeHTML(colaboradores.colab1)}"></div>
       <div class="field"><label for="s-colab2">Nome do colaborador 2</label><input type="text" id="s-colab2" value="${escapeHTML(colaboradores.colab2)}"></div>
       <div class="field"><label for="s-colab3">Nome do colaborador 3</label><input type="text" id="s-colab3" value="${escapeHTML(colaboradores.colab3)}"></div>
       <button class="primary-btn" id="sheet-salvar-nomes">Guardar nomes</button>
+      <button class="secondary-btn" id="sheet-exportar">Exportar dados (backup)</button>
+      <button class="secondary-btn" id="sheet-importar">Importar dados de um backup</button>
+      <input type="file" id="sheet-importar-file" accept="application/json,.json" style="display:none;">
+      <button class="secondary-btn" id="sheet-trocar-chave">Trocar de utilizador</button>
       <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Limpar todos os dados</button>
       <button class="secondary-btn" id="sheet-fechar">Fechar</button>
     `);
     $('#sheet-fechar').addEventListener('click', closeSheet);
     $('#sheet-limpar').addEventListener('click', confirmarLimparTudo);
+    $('#sheet-trocar-chave').addEventListener('click', trocarUtilizador);
+    $('#sheet-exportar').addEventListener('click', exportarDados);
+    $('#sheet-importar').addEventListener('click', () => $('#sheet-importar-file').click());
+    $('#sheet-importar-file').addEventListener('change', importarDados);
     $('#sheet-salvar-nomes').addEventListener('click', () => {
       colaboradores.colab1 = $('#s-colab1').value.trim() || 'Colaborador 1';
       colaboradores.colab2 = $('#s-colab2').value.trim() || 'Colaborador 2';
@@ -1145,6 +1348,61 @@
     });
   });
 
+  function exportarDados(){
+    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || 'utilizador';
+    const pacote = {
+      app: 'ela.organiza',
+      versao: 1,
+      chave: chaveAtual,
+      exportadoEm: new Date().toISOString(),
+      faxinas: faxinas,
+      gastos: gastos,
+      colaboradores: colaboradores
+    };
+    const blob = new Blob([JSON.stringify(pacote, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dataStr = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `ela-organiza-backup-${slugify(chaveAtual)}-${dataStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    storageSet(KEY_BACKUP, new Date().toISOString());
+    atualizarBannerBackup();
+    toast('Backup exportado. Guarda o ficheiro para usares noutro aparelho.');
+  }
+
+  function importarDados(ev){
+    const file = ev.target.files && ev.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(){
+      try{
+        const pacote = JSON.parse(reader.result);
+        if(!pacote || !Array.isArray(pacote.faxinas) || !Array.isArray(pacote.gastos)){
+          toast('Este ficheiro não parece ser um backup válido.');
+          return;
+        }
+        faxinas = pacote.faxinas;
+        gastos = pacote.gastos;
+        colaboradores = pacote.colaboradores || colaboradores;
+        persist();
+        persistGastos();
+        persistColab();
+        buildFormPessoaRow();
+        buildHistoricoPessoaSelect();
+        renderPainel();
+        closeSheet();
+        toast('Dados importados com sucesso.');
+      }catch(e){
+        toast('Não foi possível ler este ficheiro. Confirma que é um backup do ela organiza.');
+      }
+    };
+    reader.readAsText(file);
+    ev.target.value = '';
+  }
   function confirmarLimparTudo(){
     openSheet(`
       <div class="sheet-handle"></div>
@@ -1171,10 +1429,38 @@
   }
 
   /* ---------- INIT ---------- */
-  buildHistoricoPessoaSelect();
-  resetForm();
-  resetFormGasto();
-  renderPainel();
+  const chaveGuardada = storageGet(KEY_CHAVE_LABEL);
+  const chaveAtivaGuardada = storageGet(KEY_CHAVE_ATIVA);
+  if(chaveAtivaGuardada && chaveGuardada){
+    iniciarApp(chaveGuardada);
+  } else {
+    const gateForm = document.getElementById('gate-form');
+    const gateInput = document.getElementById('gate-input');
+    const gateError = document.getElementById('gate-error');
+    if(gateInput){
+      // cursor sempre depois do "ela." ao focar, para facilitar digitar só o nome
+      gateInput.addEventListener('focus', function(){
+        if(this.value === 'ela.') this.setSelectionRange(4,4);
+      });
+    }
+    if(gateForm){
+      gateForm.addEventListener('submit', function(ev){
+        ev.preventDefault();
+        const val = (gateInput.value || "").trim();
+        const valido = /^ela\.[a-zA-Z0-9]+$/.test(val);
+        if(!valido){
+          if(gateError){
+            gateError.textContent = 'A chave tem de começar com "ela." seguido do teu nome. Exemplo: ela.carla';
+            gateError.style.display = 'block';
+          }
+          gateInput.focus();
+          return;
+        }
+        if(gateError) gateError.style.display = 'none';
+        iniciarApp(val);
+      });
+    }
+  }
 })();
 </script>
 </body>

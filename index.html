@@ -252,6 +252,7 @@
     width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 0;
     background:#fff; color:var(--secondary); font-weight:600; font-size:14.5px; margin-top:10px;
   }
+  .demo-locked-btn{color:#a7aeac; background:#f2f3f3;}
 
   /* WEEK NAV */
   .week-nav{
@@ -303,6 +304,11 @@
   .tab-btn svg{width:20px; height:20px;}
   .tab-btn span{font-size:9.5px; font-weight:600;}
   .tab-btn.active{color:var(--secondary);}
+  .tab-btn.demo-locked{position:relative; color:#c4c9c8; opacity:0.65;}
+  .tab-btn.demo-locked .lock-badge{
+    position:absolute; top:0px; right:calc(50% - 20px); width:12px; height:12px; color:var(--muted);
+    background:var(--bg); border-radius:50%; padding:1px;
+  }
 
   /* MODAL */
   .overlay{
@@ -443,7 +449,7 @@
       </div>
     </section>
 
-    <!-- NOVO SERVIÇO -->
+    <!-- NOVA FAXINA -->
     <section class="view" id="view-nova">
       <h1 class="page-title">novo serviço</h1>
       <div class="card">
@@ -607,13 +613,15 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h11"/></svg>
       <span>Histórico</span>
     </button>
-    <button class="tab-btn" data-view="gastos">
+    <button class="tab-btn demo-locked" data-view="gastos" data-demo-lock="1">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       <span>Gastos</span>
+      <svg class="lock-badge" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a4 4 0 00-4 4v3H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2h-1V5a4 4 0 00-4-4zm-2 7V5a2 2 0 114 0v3z"/></svg>
     </button>
-    <button class="tab-btn" data-view="relatorio">
+    <button class="tab-btn demo-locked" data-view="relatorio" data-demo-lock="1">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
       <span>Relatório</span>
+      <svg class="lock-badge" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a4 4 0 00-4 4v3H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2h-1V5a4 4 0 00-4-4zm-2 7V5a2 2 0 114 0v3z"/></svg>
     </button>
     <button class="tab-btn" data-view="ajuda">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2 1.8-2 3.5"/><path d="M12 17h.01"/></svg>
@@ -786,9 +794,15 @@
     if(view === 'relatorio') renderRelatorio();
     window.scrollTo(0,0);
   }
-  $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
+  $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+    if(btn.dataset.demoLock){
+      toast('Função bloqueada nesta versão de demonstração.');
+      return;
+    }
+    switchView(btn.dataset.view);
+  }));
   const backupBannerBtn = document.getElementById('backup-banner-btn');
-  if(backupBannerBtn) backupBannerBtn.addEventListener('click', exportarDados);
+  if(backupBannerBtn) backupBannerBtn.addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
 
   /* ---------- PESSOA SELECTORS (rendered dynamically so renamed labels show) ---------- */
   function pessoaIds(){ return ['eu','colab1','colab2','colab3']; }
@@ -840,9 +854,15 @@
     $('#btn-guardar').textContent = 'Guardar serviço';
   }
 
+  const DEMO_LIMITE_SERVICOS = 2;
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = $('#f-id').value;
+    if(!id && servicos.length >= DEMO_LIMITE_SERVICOS){
+      toast('Limite de demonstração atingido (2 registos). Esta é uma versão de apresentação.');
+      return;
+    }
     const registo = {
       id: id || uid(),
       pessoa: pessoaSelecionada,
@@ -888,10 +908,8 @@
   function atualizarBannerBackup(){
     const banner = document.getElementById('backup-banner');
     if(!banner) return;
-    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
-    if(!referencia){ banner.style.display = 'none'; return; }
-    const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
-    banner.style.display = (dias >= 7 && servicos.length > 0) ? 'flex' : 'none';
+    banner.style.display = 'none'; // desativado na versão demo (backup bloqueado)
+    return;
   }
 
   function renderPainel(){
@@ -1361,8 +1379,8 @@
       <div class="field"><label for="s-colab2">Nome do colaborador 2</label><input type="text" id="s-colab2" value="${escapeHTML(colaboradores.colab2)}"></div>
       <div class="field"><label for="s-colab3">Nome do colaborador 3</label><input type="text" id="s-colab3" value="${escapeHTML(colaboradores.colab3)}"></div>
       <button class="primary-btn" id="sheet-salvar-nomes">Guardar nomes</button>
-      <button class="secondary-btn" id="sheet-exportar">Exportar dados (backup)</button>
-      <button class="secondary-btn" id="sheet-importar">Importar dados de um backup</button>
+      <button class="secondary-btn demo-locked-btn" id="sheet-exportar">🔒 Exportar dados (backup)</button>
+      <button class="secondary-btn demo-locked-btn" id="sheet-importar">🔒 Importar dados de um backup</button>
       <input type="file" id="sheet-importar-file" accept="application/json,.json" style="display:none;">
       <button class="secondary-btn" id="sheet-trocar-chave">Trocar de utilizador</button>
       <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Limpar todos os dados</button>
@@ -1371,9 +1389,8 @@
     $('#sheet-fechar').addEventListener('click', closeSheet);
     $('#sheet-limpar').addEventListener('click', confirmarLimparTudo);
     $('#sheet-trocar-chave').addEventListener('click', trocarUtilizador);
-    $('#sheet-exportar').addEventListener('click', exportarDados);
-    $('#sheet-importar').addEventListener('click', () => $('#sheet-importar-file').click());
-    $('#sheet-importar-file').addEventListener('change', importarDados);
+    $('#sheet-exportar').addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
+    $('#sheet-importar').addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
     $('#sheet-salvar-nomes').addEventListener('click', () => {
       colaboradores.colab1 = $('#s-colab1').value.trim() || 'Colaborador 1';
       colaboradores.colab2 = $('#s-colab2').value.trim() || 'Colaborador 2';

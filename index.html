@@ -1,4 +1,4 @@
-<DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-PT">
 <head>
 <meta charset="UTF-8">
@@ -87,21 +87,20 @@
   .brand-name .w-ela{font-weight:800; font-size:19px; color:var(--primary);}
   .brand-name .w-organiza{font-weight:500; font-style:italic; font-size:16px; color:var(--logo-dark);}
 
-  /* HERO BRAND (painel) */
-  .hero-brand{margin:4px 0 24px;}
-  .hero-brand .hero-word{
-    font-size:46px; font-weight:800; color:var(--primary); line-height:0.95;
-    letter-spacing:-0.02em; text-transform:lowercase;
+  .hero-tag{font-size:14.5px; color:var(--text); opacity:0.8; margin:18px 0 0;}
+  .hero-tag b{color:var(--secondary); font-weight:600; opacity:1;}
+  .user-chip{
+    display:inline-flex; align-items:center; gap:6px; margin:10px 0 20px;
+    background:var(--card); border:1px solid var(--border); border-radius:999px;
+    padding:6px 14px; font-size:12.5px; font-weight:600; color:var(--secondary);
   }
-  .hero-brand .hero-organiza{
-    font-size:33px; font-weight:500; font-style:italic; color:var(--logo-dark);
-    letter-spacing:-0.01em; margin-top:2px; text-transform:lowercase;
+  .user-chip::before{content:"●"; color:var(--success); font-size:8px;}
+
+  .app-footer{
+    text-align:center; font-size:11.5px; line-height:1.4; color:var(--muted);
+    opacity:0.75; margin:32px 0 8px; padding:0 12px; font-weight:400;
+    background:none; border:none; box-shadow:none;
   }
-  .hero-brand .hero-rule{
-    width:64px; height:2px; background:var(--primary); opacity:0.55; margin:16px 0 10px; border-radius:2px;
-  }
-  .hero-brand .hero-tag{font-size:13.5px; color:var(--text); opacity:0.72;}
-  .hero-brand .hero-tag b{color:var(--secondary); font-weight:600; opacity:1;}
   .icon-btn{
     width:38px;height:38px;border-radius:50%;
     border:none; background:var(--card); box-shadow:var(--shadow-sm);
@@ -150,18 +149,30 @@
     display:flex; align-items:center; justify-content:space-between;
   }
 
+  .resumo-final{
+    background:var(--card); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:6px 20px;
+  }
+  .resumo-linha{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 0; border-bottom:1px solid var(--border); font-size:14.5px; color:var(--text);
+  }
+  .resumo-linha:last-child{border-bottom:none;}
+  .resumo-linha strong{font-size:16px; font-weight:700;}
+  .resumo-linha.destaque{padding-top:16px;}
+  .resumo-linha.destaque strong{color:var(--secondary); font-size:18px;}
+
   /* LIST ITEMS */
-  .faxina-item{
+  .servico-item{
     background:var(--card);
     border-radius:var(--radius-md);
     box-shadow:var(--shadow-sm);
     padding:16px;
     margin-bottom:10px;
   }
-  .faxina-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
-  .faxina-cliente{font-weight:600; font-size:15.5px;}
-  .faxina-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
-  .faxina-valor{font-weight:700; font-size:16px; white-space:nowrap;}
+  .servico-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .servico-cliente{font-weight:600; font-size:15.5px;}
+  .servico-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
+  .servico-valor{font-weight:700; font-size:16px; white-space:nowrap;}
   .badge{
     display:inline-flex; align-items:center; gap:5px;
     font-size:11.5px; font-weight:600; padding:4px 10px; border-radius:20px;
@@ -170,9 +181,9 @@
   .badge.recebido{background:rgba(58,167,109,0.12); color:var(--success);}
   .badge.pendente{background:rgba(229,122,68,0.12); color:var(--alert);}
   .badge.pessoa{background:rgba(47,109,115,0.1); color:var(--secondary);}
-  .faxina-meta{font-size:12.5px; color:var(--muted); margin-top:8px;}
-  .faxina-obs{font-size:13px; color:var(--text); margin-top:8px; line-height:1.4; opacity:0.85;}
-  .faxina-actions{display:flex; gap:8px; margin-top:12px;}
+  .servico-meta{font-size:12.5px; color:var(--muted); margin-top:8px;}
+  .servico-obs{font-size:13px; color:var(--text); margin-top:8px; line-height:1.4; opacity:0.85;}
+  .servico-actions{display:flex; gap:8px; margin-top:12px;}
   .mini-btn{
     flex:1; border:none; border-radius:10px; padding:9px 0; font-size:13px; font-weight:600;
     background:var(--bg); color:var(--secondary);
@@ -392,12 +403,9 @@
 
     <!-- PAINEL -->
     <section class="view active" id="view-painel">
-      <div class="hero-brand">
-        <div class="hero-word">ela<span style="color:var(--primary);">.</span></div>
-        <div class="hero-organiza">organiza</div>
-        <div class="hero-rule"></div>
-        <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
-      </div>
+      <h1 class="page-title">Meu painel</h1>
+      <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
+      <div class="user-chip" id="user-chip" style="display:none;"></div>
 
       <div class="backup-banner" id="backup-banner" style="display:none;">
         <div class="backup-banner-text">
@@ -410,9 +418,15 @@
         <div class="stat-card success"><div class="label">Valor recebido</div><div class="value" id="p-recebido">€0,00</div></div>
         <div class="stat-card alert"><div class="label">Valor pendente</div><div class="value" id="p-pendente">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Horas trabalhadas</div><div class="value" id="p-horas">0h</div></div>
-        <div class="stat-card primary"><div class="label">Faxinas realizadas</div><div class="value" id="p-quantidade">0</div></div>
+        <div class="stat-card primary"><div class="label">Serviços realizados</div><div class="value" id="p-quantidade">0</div></div>
         <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="p-gastos">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="p-liquido">€0,00</div></div>
+      </div>
+
+      <div class="section-label">Total geral (todos juntos)</div>
+      <div class="stat-grid">
+        <div class="stat-card success"><div class="label">Recebido — todos juntos</div><div class="value" id="p-recebido-geral">€0,00</div></div>
+        <div class="stat-card primary"><div class="label">Recebido — só colaboradoras</div><div class="value" id="p-recebido-colab">€0,00</div></div>
       </div>
 
       <div class="section-label">Por pessoa</div>
@@ -420,13 +434,20 @@
 
       <div class="section-label">Últimos registos</div>
       <div id="p-ultimos"></div>
+
+      <div class="section-label">Receita Total</div>
+      <div class="resumo-final">
+        <div class="resumo-linha"><span>Receita</span><strong id="p-resumo-receita">€0,00</strong></div>
+        <div class="resumo-linha"><span>Gastos</span><strong id="p-resumo-gastos">€0,00</strong></div>
+        <div class="resumo-linha destaque"><span>Lucro líquido</span><strong id="p-resumo-lucro">€0,00</strong></div>
+      </div>
     </section>
 
-    <!-- NOVA FAXINA -->
+    <!-- NOVO SERVIÇO -->
     <section class="view" id="view-nova">
-      <h1 class="page-title">nova faxina</h1>
+      <h1 class="page-title">novo serviço</h1>
       <div class="card">
-        <form id="form-faxina">
+        <form id="form-servico">
           <input type="hidden" id="f-id">
           <div class="field">
             <label>Responsável</label>
@@ -459,7 +480,7 @@
               <button type="button" class="toggle-opt nao" data-pago="nao">Não</button>
             </div>
           </div>
-          <button type="submit" class="primary-btn" id="btn-guardar">Guardar faxina</button>
+          <button type="submit" class="primary-btn" id="btn-guardar">Guardar serviço</button>
         </form>
       </div>
     </section>
@@ -487,7 +508,7 @@
           <input type="hidden" id="g-id">
           <div class="field">
             <label for="g-descricao">Descrição</label>
-            <input type="text" id="g-descricao" placeholder="Ex: material de limpeza, km, transporte..." required>
+            <input type="text" id="g-descricao" placeholder="Ex: material de serviço, km, transporte..." required>
           </div>
           <div class="field">
             <label for="g-data">Data</label>
@@ -523,7 +544,7 @@
         <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="r-gastos">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="r-liquido">€0,00</div></div>
       </div>
-      <div class="section-label">Faxinas da semana (<span id="r-qtd">0</span>)</div>
+      <div class="section-label">Serviços da semana (<span id="r-qtd">0</span>)</div>
       <div id="lista-relatorio"></div>
       <div class="section-label">Gastos da semana (<span id="r-qtd-gastos">0</span>)</div>
       <div id="lista-relatorio-gastos"></div>
@@ -540,7 +561,7 @@
       </div>
 
       <div class="help-block">
-        <h3>2. Registar uma faxina</h3>
+        <h3>2. Registar um serviço</h3>
         <p>Vai à aba <strong>Nova</strong>, preenche cliente, data, horas, valor e se já foi pago, e toca em guardar. Aparece logo no Painel e no Histórico.</p>
       </div>
 
@@ -570,6 +591,7 @@
       </div>
     </section>
 
+    <footer class="app-footer">- uma solução Rota Singular -</footer>
   </main>
 
   <nav class="tabbar">
@@ -648,7 +670,7 @@
     catch(e){ storageBlocked = true; memoryStore[key] = value; }
   }
 
-  let faxinas = [];
+  let servicos = [];
   let gastos = [];
   let colaboradores = { eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3" };
 
@@ -656,7 +678,7 @@
      Cada "chave" tem os seus próprios dados, guardados sob um prefixo
      próprio nas chaves de armazenamento. Isto permite que o mesmo link
      (ou até o mesmo aparelho) seja usado por várias pessoas sem misturar
-     faxinas, gastos ou colaboradores de cada uma. */
+     serviços, gastos ou colaboradores de cada uma. */
   function slugify(txt){
     return (txt || "")
       .toLowerCase()
@@ -666,7 +688,7 @@
   }
 
   function carregarDados(){
-    faxinas = JSON.parse(storageGet(KEY) || "[]");
+    servicos = JSON.parse(storageGet(KEY) || "[]");
     gastos = JSON.parse(storageGet(KEY_GASTOS) || "[]");
     colaboradores = JSON.parse(storageGet(KEY_COLAB) || "null") || {
       eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
@@ -686,10 +708,10 @@
     // aparelho e já existiam dados antigos (sem chave), passamos esses
     // dados para a primeira chave criada, para não perder nada.
     if(!storageGet(KEY_MIGRADO)){
-      const legadoFaxinas = storageGet("elaOrganizaFaxinas");
+      const legadoServicos = storageGet("elaOrganizaFaxinas");
       const legadoGastos = storageGet("elaOrganizaGastos");
       const legadoColab = storageGet("elaOrganizaColaboradores");
-      if(legadoFaxinas) storageSet(KEY, legadoFaxinas);
+      if(legadoServicos) storageSet(KEY, legadoServicos);
       if(legadoGastos) storageSet(KEY_GASTOS, legadoGastos);
       if(legadoColab) storageSet(KEY_COLAB, legadoColab);
       storageSet(KEY_MIGRADO, "1");
@@ -698,6 +720,12 @@
     storageSet(KEY_CHAVE_ATIVA, slug);
     storageSet(KEY_CHAVE_LABEL, chaveOriginal.trim());
     carregarDados();
+
+    const userChip = document.getElementById('user-chip');
+    if(userChip){
+      userChip.textContent = chaveOriginal.trim();
+      userChip.style.display = 'inline-flex';
+    }
 
     const gate = document.getElementById('gate');
     if(gate) gate.classList.add('gate-hidden');
@@ -716,6 +744,7 @@
     location.reload();
   }
 
+  let historicoFilter = "todas";
 
   let historicoPessoa = "todos";
   let weekOffset = 0;
@@ -725,7 +754,7 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
 
-  function persist(){ storageSet(KEY, JSON.stringify(faxinas)); }
+  function persist(){ storageSet(KEY, JSON.stringify(servicos)); }
   function persistGastos(){ storageSet(KEY_GASTOS, JSON.stringify(gastos)); }
   function persistColab(){ storageSet(KEY_COLAB, JSON.stringify(colaboradores)); }
   function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
@@ -790,7 +819,7 @@
   });
 
   /* ---------- FORM: NOVA / EDITAR FAXINA ---------- */
-  const form = $('#form-faxina');
+  const form = $('#form-servico');
   $$('.toggle-opt').forEach(btn => {
     btn.addEventListener('click', () => {
       pagoSelecionado = btn.dataset.pago;
@@ -808,7 +837,7 @@
     $$('.toggle-opt').forEach(b => b.classList.remove('selected'));
     $('.toggle-opt.sim').classList.add('selected');
     buildFormPessoaRow();
-    $('#btn-guardar').textContent = 'Guardar faxina';
+    $('#btn-guardar').textContent = 'Guardar serviço';
   }
 
   form.addEventListener('submit', (e) => {
@@ -823,22 +852,22 @@
       valor: parseFloat($('#f-valor').value) || 0,
       observacoes: $('#f-obs').value.trim(),
       pago: pagoSelecionado === 'sim',
-      createdAt: id ? ((faxinas.find(f=>f.id===id) || {}).createdAt || Date.now()) : Date.now()
+      createdAt: id ? ((servicos.find(f=>f.id===id) || {}).createdAt || Date.now()) : Date.now()
     };
     if(id){
-      faxinas = faxinas.map(f => f.id === id ? registo : f);
-      toast('Faxina atualizada');
+      servicos = servicos.map(f => f.id === id ? registo : f);
+      toast('Serviço atualizado');
     } else {
-      faxinas.push(registo);
-      toast('Faxina guardada');
+      servicos.push(registo);
+      toast('Serviço guardado');
     }
     persist();
     resetForm();
     switchView('historico');
   });
 
-  function editarFaxina(id){
-    const f = faxinas.find(x => x.id === id);
+  function editarServico(id){
+    const f = servicos.find(x => x.id === id);
     if(!f) return;
     $('#f-id').value = f.id;
     $('#f-cliente').value = f.cliente;
@@ -851,7 +880,7 @@
     $$('.toggle-opt').forEach(b => b.classList.remove('selected'));
     $(f.pago ? '.toggle-opt.sim' : '.toggle-opt.nao').classList.add('selected');
     buildFormPessoaRow();
-    $('#btn-guardar').textContent = 'Atualizar faxina';
+    $('#btn-guardar').textContent = 'Atualizar serviço';
     switchView('nova');
   }
 
@@ -862,32 +891,42 @@
     const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
     if(!referencia){ banner.style.display = 'none'; return; }
     const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
-    banner.style.display = (dias >= 7 && faxinas.length > 0) ? 'flex' : 'none';
+    banner.style.display = (dias >= 7 && servicos.length > 0) ? 'flex' : 'none';
   }
 
   function renderPainel(){
     atualizarBannerBackup();
-    const recebido = faxinas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
-    const pendente = faxinas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
-    const horas = faxinas.reduce((s,f)=>s+f.horas,0);
+    const minhas = servicos.filter(f => (f.pessoa || 'eu') === 'eu');
+    const recebido = minhas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+    const pendente = minhas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
+    const horas = minhas.reduce((s,f)=>s+f.horas,0);
     const totalGastos = gastos.reduce((s,g)=>s+g.valor,0);
     $('#p-recebido').textContent = fmtMoney(recebido);
     $('#p-pendente').textContent = fmtMoney(pendente);
     $('#p-horas').textContent = horas.toLocaleString('pt-PT') + 'h';
-    $('#p-quantidade').textContent = faxinas.length;
+    $('#p-quantidade').textContent = minhas.length;
     $('#p-gastos').textContent = fmtMoney(totalGastos);
     $('#p-liquido').textContent = fmtMoney(recebido - totalGastos);
 
+    const recebidoGeral = servicos.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+    const recebidoColab = servicos.filter(f=>f.pago && (f.pessoa || 'eu') !== 'eu').reduce((s,f)=>s+f.valor,0);
+    $('#p-recebido-geral').textContent = fmtMoney(recebidoGeral);
+    $('#p-recebido-colab').textContent = fmtMoney(recebidoColab);
+
+    $('#p-resumo-receita').textContent = fmtMoney(recebidoGeral);
+    $('#p-resumo-gastos').textContent = fmtMoney(totalGastos);
+    $('#p-resumo-lucro').textContent = fmtMoney(recebidoGeral - totalGastos);
+
     const contColab = $('#p-colaboradores');
     contColab.innerHTML = pessoaIds().map(id => {
-      const lista = faxinas.filter(f => (f.pessoa || 'eu') === id);
+      const lista = servicos.filter(f => (f.pessoa || 'eu') === id);
       const rec = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
       const pen = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
       return `
       <div class="colab-item">
         <div>
           <div class="nome">${escapeHTML(nomePessoa(id))}</div>
-          <div class="sub">${lista.length} faxina${lista.length===1?'':'s'}</div>
+          <div class="sub">${lista.length} serviço${lista.length===1?'':'s'}</div>
         </div>
         <div class="valores">
           <div class="rec">${fmtMoney(rec)}</div>
@@ -896,37 +935,37 @@
       </div>`;
     }).join('');
 
-    const ultimos = [...faxinas].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
+    const ultimos = [...servicos].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
     const cont = $('#p-ultimos');
     if(ultimos.length === 0){
-      cont.innerHTML = emptyState('📋','Ainda não há faxinas registadas.<br>Toca em “Nova” para começar.');
+      cont.innerHTML = emptyState('📋','Ainda não há serviços registados.<br>Toca em “Nova” para começar.');
       return;
     }
-    cont.innerHTML = ultimos.map(f => faxinaCardHTML(f, false)).join('');
+    cont.innerHTML = ultimos.map(f => servicoCardHTML(f, false)).join('');
   }
 
   function emptyState(emoji, text){
     return `<div class="empty-state"><span class="emoji">${emoji}</span><p>${text}</p></div>`;
   }
 
-  function faxinaCardHTML(f, withActions){
+  function servicoCardHTML(f, withActions){
     const pessoaId = f.pessoa || 'eu';
     return `
-    <div class="faxina-item">
-      <div class="faxina-top">
+    <div class="servico-item">
+      <div class="servico-top">
         <div>
-          <div class="faxina-cliente">${escapeHTML(f.cliente)}</div>
-          <div class="faxina-data">${fmtDate(f.data)} · ${f.horas}h</div>
+          <div class="servico-cliente">${escapeHTML(f.cliente)}</div>
+          <div class="servico-data">${fmtDate(f.data)} · ${f.horas}h</div>
         </div>
-        <div class="faxina-valor">${fmtMoney(f.valor)}</div>
+        <div class="servico-valor">${fmtMoney(f.valor)}</div>
       </div>
-      ${f.observacoes ? `<div class="faxina-obs">${escapeHTML(f.observacoes)}</div>` : ''}
+      ${f.observacoes ? `<div class="servico-obs">${escapeHTML(f.observacoes)}</div>` : ''}
       <div>
         <span class="badge pessoa">${escapeHTML(nomePessoa(pessoaId))}</span>
         <span class="badge ${f.pago ? 'recebido' : 'pendente'}">${f.pago ? '✓ Recebido' : '● Pendente'}</span>
       </div>
       ${withActions ? `
-      <div class="faxina-actions">
+      <div class="servico-actions">
         <button class="mini-btn" onclick="window.__editar('${f.id}')">Editar</button>
         <button class="mini-btn danger" onclick="window.__apagar('${f.id}')">Apagar</button>
       </div>` : ''}
@@ -950,26 +989,26 @@
   });
 
   function renderHistorico(){
-    let lista = [...faxinas].sort((a,b)=> new Date(b.data) - new Date(a.data));
+    let lista = [...servicos].sort((a,b)=> new Date(b.data) - new Date(a.data));
     if(historicoFilter === 'recebidas') lista = lista.filter(f=>f.pago);
     if(historicoFilter === 'pendentes') lista = lista.filter(f=>!f.pago);
     if(historicoPessoa !== 'todos') lista = lista.filter(f => (f.pessoa || 'eu') === historicoPessoa);
     const cont = $('#lista-historico');
     if(lista.length === 0){
-      cont.innerHTML = emptyState('🧺','Nenhuma faxina encontrada nesta categoria.');
+      cont.innerHTML = emptyState('🧺','Nenhum serviço encontrado nesta categoria.');
       return;
     }
-    cont.innerHTML = lista.map(f => faxinaCardHTML(f, true)).join('');
+    cont.innerHTML = lista.map(f => servicoCardHTML(f, true)).join('');
   }
 
-  window.__editar = editarFaxina;
+  window.__editar = editarServico;
   window.__apagar = (id) => confirmarApagar(id);
 
   function confirmarApagar(id){
     openSheet(`
       <div class="sheet-handle"></div>
       <h2>Apagar registo</h2>
-      <p class="confirm-text">Tem a certeza de que pretende apagar esta faxina? Esta ação não pode ser desfeita.</p>
+      <p class="confirm-text">Tem a certeza de que pretende apagar este serviço? Esta ação não pode ser desfeita.</p>
       <div class="confirm-actions">
         <button class="btn-cancel" id="sheet-cancel">Cancelar</button>
         <button class="btn-danger" id="sheet-confirm">Apagar</button>
@@ -977,12 +1016,12 @@
     `);
     $('#sheet-cancel').addEventListener('click', closeSheet);
     $('#sheet-confirm').addEventListener('click', () => {
-      faxinas = faxinas.filter(f => f.id !== id);
+      servicos = servicos.filter(f => f.id !== id);
       persist();
       closeSheet();
       renderHistorico();
       renderPainel();
-      toast('Faxina apagada');
+      toast('Serviço apagado');
     });
   }
 
@@ -1028,7 +1067,7 @@
         </div>
         <div class="gasto-valor">- ${fmtMoney(g.valor)}</div>
       </div>
-      <div class="faxina-actions">
+      <div class="servico-actions">
         <button class="mini-btn" onclick="window.__editarGasto('${g.id}')">Editar</button>
         <button class="mini-btn danger" onclick="window.__apagarGasto('${g.id}')">Apagar</button>
       </div>
@@ -1102,7 +1141,7 @@
     $('#week-label').textContent = `${fmtDateShort(monday)} – ${fmtDateShort(sunday)}`;
     $('#week-sub').textContent = weekOffset === 0 ? 'Esta semana' : (weekOffset < 0 ? `${Math.abs(weekOffset)} semana(s) atrás` : `Daqui a ${weekOffset} semana(s)`);
 
-    const lista = faxinas.filter(f => dentroDaSemana(f.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
+    const lista = servicos.filter(f => dentroDaSemana(f.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
     const listaGastos = gastos.filter(g => dentroDaSemana(g.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
 
     const faturado = lista.reduce((s,f)=>s+f.valor,0);
@@ -1121,8 +1160,8 @@
     $('#r-qtd-gastos').textContent = listaGastos.length;
 
     $('#lista-relatorio').innerHTML = lista.length === 0
-      ? emptyState('📅','Sem faxinas registadas nesta semana.')
-      : lista.map(f => faxinaCardHTML(f, false)).join('');
+      ? emptyState('📅','Sem serviços registados nesta semana.')
+      : lista.map(f => servicoCardHTML(f, false)).join('');
 
     $('#lista-relatorio-gastos').innerHTML = listaGastos.length === 0
       ? emptyState('🧾','Sem gastos registados nesta semana.')
@@ -1173,7 +1212,7 @@
     doc.setFont('helvetica','normal');
     doc.setFontSize(10);
     doc.setTextColor(120,120,120);
-    doc.text('Relatório semanal de faxinas', marginX + 28, y + 3);
+    doc.text('Relatório semanal de serviços', marginX + 28, y + 3);
 
     y += 20;
     doc.setDrawColor(230,230,230);
@@ -1193,7 +1232,7 @@
       ['Horas trabalhadas', horas.toLocaleString('pt-PT') + 'h'],
       ['Gastos gerais', fmtMoney(totalGastosSemana)],
       ['Valor líquido', fmtMoney(recebido - totalGastosSemana)],
-      ['Faxinas realizadas', String(lista.length)]
+      ['Serviços realizados', String(lista.length)]
     ];
     doc.setFontSize(10);
     totals.forEach((row, i) => {
@@ -1214,7 +1253,7 @@
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(47,109,115);
-    doc.text('Faxinas da semana', marginX, y);
+    doc.text('Serviços da semana', marginX, y);
     y += 7;
 
     doc.setFontSize(9);
@@ -1234,7 +1273,7 @@
     if(lista.length === 0){
       doc.setFont('helvetica','normal');
       doc.setTextColor(150,150,150);
-      doc.text('Sem faxinas registadas nesta semana.', marginX, y);
+      doc.text('Sem serviços registados nesta semana.', marginX, y);
       y += 8;
     } else {
       lista.forEach(f => {
@@ -1355,7 +1394,7 @@
       versao: 1,
       chave: chaveAtual,
       exportadoEm: new Date().toISOString(),
-      faxinas: faxinas,
+      servicos: servicos,
       gastos: gastos,
       colaboradores: colaboradores
     };
@@ -1381,11 +1420,12 @@
     reader.onload = function(){
       try{
         const pacote = JSON.parse(reader.result);
-        if(!pacote || !Array.isArray(pacote.faxinas) || !Array.isArray(pacote.gastos)){
+        const servicosImportados = pacote.servicos || pacote.faxinas;
+        if(!pacote || !Array.isArray(servicosImportados) || !Array.isArray(pacote.gastos)){
           toast('Este ficheiro não parece ser um backup válido.');
           return;
         }
-        faxinas = pacote.faxinas;
+        servicos = servicosImportados;
         gastos = pacote.gastos;
         colaboradores = pacote.colaboradores || colaboradores;
         persist();
@@ -1415,7 +1455,7 @@
     `);
     $('#sheet-cancel2').addEventListener('click', closeSheet);
     $('#sheet-confirm2').addEventListener('click', () => {
-      faxinas = [];
+      servicos = [];
       gastos = [];
       persist();
       persistGastos();

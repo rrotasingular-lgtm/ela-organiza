@@ -95,6 +95,7 @@
     padding:6px 14px; font-size:12.5px; font-weight:600; color:var(--secondary);
   }
   .user-chip::before{content:"●"; color:var(--success); font-size:8px;}
+  .mes-chip{font-size:12px; font-weight:600; color:var(--muted); margin-top:8px; text-transform:capitalize;}
 
   .app-footer{
     text-align:center; font-size:11.5px; line-height:1.4; color:var(--muted);
@@ -219,7 +220,7 @@
   /* FORM */
   .field{margin-bottom:16px;}
   .field label{display:block; font-size:13px; font-weight:600; color:var(--secondary); margin-bottom:7px;}
-  .field input[type=text], .field input[type=date], .field input[type=number], .field textarea{
+  .field input[type=text], .field input[type=date], .field input[type=number], .field textarea, .field select{
     width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm);
     padding:13px 14px; font-size:15px; background:#fff; color:var(--text);
     outline:none; transition:border-color .15s;
@@ -252,7 +253,6 @@
     width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 0;
     background:#fff; color:var(--secondary); font-weight:600; font-size:14.5px; margin-top:10px;
   }
-  .demo-locked-btn{color:#a7aeac; background:#f2f3f3;}
 
   /* WEEK NAV */
   .week-nav{
@@ -304,11 +304,6 @@
   .tab-btn svg{width:20px; height:20px;}
   .tab-btn span{font-size:9.5px; font-weight:600;}
   .tab-btn.active{color:var(--secondary);}
-  .tab-btn.demo-locked{position:relative; color:#c4c9c8; opacity:0.65;}
-  .tab-btn.demo-locked .lock-badge{
-    position:absolute; top:0px; right:calc(50% - 20px); width:12px; height:12px; color:var(--muted);
-    background:var(--bg); border-radius:50%; padding:1px;
-  }
 
   /* MODAL */
   .overlay{
@@ -411,6 +406,7 @@
     <section class="view active" id="view-painel">
       <h1 class="page-title">Meu painel</h1>
       <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
+      <div class="mes-chip" id="p-mes-atual">–</div>
       <div class="user-chip" id="user-chip" style="display:none;"></div>
 
       <div class="backup-banner" id="backup-banner" style="display:none;">
@@ -449,7 +445,7 @@
       </div>
     </section>
 
-    <!-- NOVA FAXINA -->
+    <!-- NOVO SERVIÇO -->
     <section class="view" id="view-nova">
       <h1 class="page-title">novo serviço</h1>
       <div class="card">
@@ -468,8 +464,8 @@
             <input type="date" id="f-data" required>
           </div>
           <div class="field">
-            <label for="f-horas">Horas</label>
-            <input type="number" id="f-horas" placeholder="Ex: 3" min="0" step="0.5" required>
+            <label for="f-horas">Horas trabalhadas (opcional)</label>
+            <input type="text" id="f-horas" placeholder="Ex: 3h, 3h30, 2,5h, 30min, 1h15" autocomplete="off">
           </div>
           <div class="field">
             <label for="f-valor">Valor (€)</label>
@@ -477,7 +473,7 @@
           </div>
           <div class="field">
             <label for="f-obs">Observações</label>
-            <textarea id="f-obs" placeholder="Notas sobre o serviço (opcional)"></textarea>
+            <textarea id="f-obs" placeholder="Ex: tipo de serviço realizado (opcional)"></textarea>
           </div>
           <div class="field">
             <label>Pagamento recebido</label>
@@ -533,15 +529,17 @@
 
     <!-- RELATORIO -->
     <section class="view" id="view-relatorio">
-      <h1 class="page-title">relatório semanal</h1>
-      <div class="week-nav">
-        <button id="week-prev" aria-label="Semana anterior">‹</button>
-        <div>
-          <div class="week-label" id="week-label">–</div>
-          <div class="week-sub" id="week-sub">–</div>
-        </div>
-        <button id="week-next" aria-label="Semana seguinte">›</button>
+      <h1 class="page-title">relatórios</h1>
+
+      <div class="field">
+        <label for="periodo-select">Período</label>
+        <select id="periodo-select"></select>
       </div>
+      <div class="field">
+        <label for="r-cliente-busca">Filtrar por cliente (opcional)</label>
+        <input type="text" id="r-cliente-busca" placeholder="Ex: Maria Silva" autocomplete="off">
+      </div>
+
       <div class="stat-grid">
         <div class="stat-card primary"><div class="label">Total faturado</div><div class="value" id="r-faturado">€0,00</div></div>
         <div class="stat-card success"><div class="label">Total recebido</div><div class="value" id="r-recebido">€0,00</div></div>
@@ -550,9 +548,9 @@
         <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="r-gastos">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="r-liquido">€0,00</div></div>
       </div>
-      <div class="section-label">Serviços da semana (<span id="r-qtd">0</span>)</div>
+      <div class="section-label">Serviços do período (<span id="r-qtd">0</span>)</div>
       <div id="lista-relatorio"></div>
-      <div class="section-label">Gastos da semana (<span id="r-qtd-gastos">0</span>)</div>
+      <div class="section-label">Gastos do período (<span id="r-qtd-gastos">0</span>)</div>
       <div id="lista-relatorio-gastos"></div>
       <button class="primary-btn" id="btn-pdf" style="margin-top:18px;">Exportar PDF</button>
     </section>
@@ -577,8 +575,8 @@
       </div>
 
       <div class="help-block">
-        <h3>4. Relatório semanal</h3>
-        <p>Mostra o resumo da semana e permite exportar um PDF para enviar ou imprimir.</p>
+        <h3>4. Relatórios</h3>
+        <p>Mostra o resumo do período escolhido (mês atual, mês anterior, outro mês ou todo o histórico) e permite filtrar por cliente e exportar um PDF.</p>
       </div>
 
       <div class="help-block">
@@ -613,15 +611,13 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h11"/></svg>
       <span>Histórico</span>
     </button>
-    <button class="tab-btn demo-locked" data-view="gastos" data-demo-lock="1">
+    <button class="tab-btn" data-view="gastos">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
       <span>Gastos</span>
-      <svg class="lock-badge" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a4 4 0 00-4 4v3H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2h-1V5a4 4 0 00-4-4zm-2 7V5a2 2 0 114 0v3z"/></svg>
     </button>
-    <button class="tab-btn demo-locked" data-view="relatorio" data-demo-lock="1">
+    <button class="tab-btn" data-view="relatorio">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9M12 19V5M20 19v-7"/></svg>
       <span>Relatório</span>
-      <svg class="lock-badge" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a4 4 0 00-4 4v3H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2h-1V5a4 4 0 00-4-4zm-2 7V5a2 2 0 114 0v3z"/></svg>
     </button>
     <button class="tab-btn" data-view="ajuda">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 015 0c0 1.5-2 1.8-2 3.5"/><path d="M12 17h.01"/></svg>
@@ -656,6 +652,7 @@
   let KEY_COLAB = "elaOrganizaColaboradores";
   let KEY_BACKUP = "elaOrganizaUltimoBackup";
   let KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso";
+  let KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado";
   const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
   const KEY_MIGRADO = "elaOrganizaMigrado";
@@ -711,6 +708,7 @@
     KEY_BACKUP = "elaOrganizaUltimoBackup::" + slug;
     KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso::" + slug;
     if(!storageGet(KEY_PRIMEIRO_USO)) storageSet(KEY_PRIMEIRO_USO, new Date().toISOString());
+    KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
 
     // Migração única: se esta é a primeira vez que uma chave é usada neste
     // aparelho e já existiam dados antigos (sem chave), passamos esses
@@ -744,6 +742,8 @@
     renderPainel();
     if(storageBlocked){
       setTimeout(() => toast('Aviso: guardar dados não está disponível a abrir o ficheiro diretamente. Instale a app através de um servidor/link para guardar os registos.'), 600);
+    } else {
+      setTimeout(verificarLembreteBackupModal, 700);
     }
   }
 
@@ -755,7 +755,6 @@
   let historicoFilter = "todas";
 
   let historicoPessoa = "todos";
-  let weekOffset = 0;
   let pagoSelecionado = "sim";
   let pessoaSelecionada = "eu";
 
@@ -774,6 +773,57 @@
   };
   const fmtDateShort = (d) => d.toLocaleDateString('pt-PT', {day:'2-digit', month:'short'});
   const nomePessoa = (id) => colaboradores[id] || id;
+
+  /* Converte texto livre de horas (ex: "3h30", "2,5h", "45min", "1h15") para
+     um número decimal, apenas para efeitos de somas/estatísticas. O texto
+     original escrito pelo utilizador é sempre guardado e mostrado tal como
+     foi digitado — isto é só um "melhor esforço" para os totais. Formatos
+     não reconhecidos contam como 0 na soma, mas continuam guardados e
+     visíveis normalmente. */
+  function parseHoras(texto){
+    if(!texto) return 0;
+    const t = String(texto).trim().toLowerCase().replace(',', '.');
+    let m;
+    if((m = t.match(/^(\d+)\s*h\s*(\d{1,2})$/))) return parseInt(m[1],10) + parseInt(m[2],10)/60;
+    if((m = t.match(/^(\d+)\s*h\s*(\d{1,2})\s*m(in)?$/))) return parseInt(m[1],10) + parseInt(m[2],10)/60;
+    if((m = t.match(/^(\d+(\.\d+)?)\s*h$/))) return parseFloat(m[1]);
+    if((m = t.match(/^(\d+)\s*m(in)?$/))) return parseInt(m[1],10)/60;
+    if((m = t.match(/^(\d+(\.\d+)?)$/))) return parseFloat(m[1]);
+    return 0;
+  }
+
+  /* ---------- GESTÃO POR MÊS ----------
+     Os dados não são fisicamente separados por mês no armazenamento — cada
+     registo já guarda a sua data (campo "data"), e calculamos o mês a que
+     pertence a partir daí. Isto mantém todo o histórico sempre intacto no
+     mesmo local, sem risco de migração de dados, e permite filtrar por mês
+     apenas para efeitos de visualização (Painel e Relatórios). */
+  function chaveMes(dataIso){
+    if(!dataIso) return '';
+    return dataIso.slice(0,7); // "AAAA-MM"
+  }
+  function chaveMesAtual(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  function chaveMesAnterior(){
+    const d = new Date();
+    d.setMonth(d.getMonth()-1);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  function nomeMes(chave){
+    if(!chave) return '';
+    const [ano, mes] = chave.split('-').map(Number);
+    const d = new Date(ano, mes-1, 1);
+    const nome = d.toLocaleDateString('pt-PT', {month:'long', year:'numeric'});
+    return nome.charAt(0).toUpperCase() + nome.slice(1);
+  }
+  function mesesDisponiveis(){
+    const set = new Set();
+    servicos.forEach(f => { if(f.data) set.add(chaveMes(f.data)); });
+    gastos.forEach(g => { if(g.data) set.add(chaveMes(g.data)); });
+    return [...set].sort().reverse();
+  }
 
   function toast(msg){
     const t = $('#toast');
@@ -794,15 +844,9 @@
     if(view === 'relatorio') renderRelatorio();
     window.scrollTo(0,0);
   }
-  $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
-    if(btn.dataset.demoLock){
-      toast('Função bloqueada nesta versão de demonstração.');
-      return;
-    }
-    switchView(btn.dataset.view);
-  }));
+  $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
   const backupBannerBtn = document.getElementById('backup-banner-btn');
-  if(backupBannerBtn) backupBannerBtn.addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
+  if(backupBannerBtn) backupBannerBtn.addEventListener('click', exportarDados);
 
   /* ---------- PESSOA SELECTORS (rendered dynamically so renamed labels show) ---------- */
   function pessoaIds(){ return ['eu','colab1','colab2','colab3']; }
@@ -832,7 +876,7 @@
     renderHistorico();
   });
 
-  /* ---------- FORM: NOVA / EDITAR FAXINA ---------- */
+  /* ---------- FORM: NOVO / EDITAR SERVIÇO ---------- */
   const form = $('#form-servico');
   $$('.toggle-opt').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -854,21 +898,15 @@
     $('#btn-guardar').textContent = 'Guardar serviço';
   }
 
-  const DEMO_LIMITE_SERVICOS = 2;
-
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = $('#f-id').value;
-    if(!id && servicos.length >= DEMO_LIMITE_SERVICOS){
-      toast('Limite de demonstração atingido (2 registos). Esta é uma versão de apresentação.');
-      return;
-    }
     const registo = {
       id: id || uid(),
       pessoa: pessoaSelecionada,
       cliente: $('#f-cliente').value.trim(),
       data: $('#f-data').value,
-      horas: parseFloat($('#f-horas').value) || 0,
+      horas: $('#f-horas').value.trim(),
       valor: parseFloat($('#f-valor').value) || 0,
       observacoes: $('#f-obs').value.trim(),
       pago: pagoSelecionado === 'sim',
@@ -908,17 +946,58 @@
   function atualizarBannerBackup(){
     const banner = document.getElementById('backup-banner');
     if(!banner) return;
-    banner.style.display = 'none'; // desativado na versão demo (backup bloqueado)
-    return;
+    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
+    if(!referencia){ banner.style.display = 'none'; return; }
+    const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
+    banner.style.display = (dias >= 7 && servicos.length > 0) ? 'flex' : 'none';
+  }
+
+  function verificarLembreteBackupModal(){
+    if(servicos.length === 0) return;
+    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
+    if(!referencia) return;
+    const diasBackup = (Date.now() - new Date(referencia).getTime()) / 86400000;
+    if(diasBackup < 7) return;
+
+    const adiado = storageGet(KEY_LEMBRETE_ADIADO);
+    if(adiado){
+      const diasAdiado = (Date.now() - new Date(adiado).getTime()) / 86400000;
+      if(diasAdiado < 7) return;
+    }
+
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Lembrete de backup</h2>
+      <p class="confirm-text">Já faz 7 dias desde o teu último backup. Deseja criar um novo agora?</p>
+      <div class="confirm-actions">
+        <button class="btn-cancel" id="sheet-backup-depois">Agora não</button>
+        <button class="btn-danger" id="sheet-backup-fazer" style="background:var(--secondary);">Fazer backup</button>
+      </div>
+    `);
+    $('#sheet-backup-depois').addEventListener('click', () => {
+      storageSet(KEY_LEMBRETE_ADIADO, new Date().toISOString());
+      closeSheet();
+    });
+    $('#sheet-backup-fazer').addEventListener('click', () => {
+      closeSheet();
+      exportarDados();
+    });
   }
 
   function renderPainel(){
     atualizarBannerBackup();
-    const minhas = servicos.filter(f => (f.pessoa || 'eu') === 'eu');
+    const mesAtual = chaveMesAtual();
+    const servicosDoMes = servicos.filter(f => chaveMes(f.data) === mesAtual);
+    const gastosDoMes = gastos.filter(g => chaveMes(g.data) === mesAtual);
+
+    const rotuloMes = $('#p-mes-atual');
+    if(rotuloMes) rotuloMes.textContent = nomeMes(mesAtual);
+
+    const minhas = servicosDoMes.filter(f => (f.pessoa || 'eu') === 'eu');
     const recebido = minhas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const pendente = minhas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
-    const horas = minhas.reduce((s,f)=>s+f.horas,0);
-    const totalGastos = gastos.reduce((s,g)=>s+g.valor,0);
+    const horas = minhas.reduce((s,f)=>s+parseHoras(f.horas),0);
+    const totalGastos = gastosDoMes.reduce((s,g)=>s+g.valor,0);
     $('#p-recebido').textContent = fmtMoney(recebido);
     $('#p-pendente').textContent = fmtMoney(pendente);
     $('#p-horas').textContent = horas.toLocaleString('pt-PT') + 'h';
@@ -926,8 +1005,8 @@
     $('#p-gastos').textContent = fmtMoney(totalGastos);
     $('#p-liquido').textContent = fmtMoney(recebido - totalGastos);
 
-    const recebidoGeral = servicos.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
-    const recebidoColab = servicos.filter(f=>f.pago && (f.pessoa || 'eu') !== 'eu').reduce((s,f)=>s+f.valor,0);
+    const recebidoGeral = servicosDoMes.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+    const recebidoColab = servicosDoMes.filter(f=>f.pago && (f.pessoa || 'eu') !== 'eu').reduce((s,f)=>s+f.valor,0);
     $('#p-recebido-geral').textContent = fmtMoney(recebidoGeral);
     $('#p-recebido-colab').textContent = fmtMoney(recebidoColab);
 
@@ -937,7 +1016,7 @@
 
     const contColab = $('#p-colaboradores');
     contColab.innerHTML = pessoaIds().map(id => {
-      const lista = servicos.filter(f => (f.pessoa || 'eu') === id);
+      const lista = servicosDoMes.filter(f => (f.pessoa || 'eu') === id);
       const rec = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
       const pen = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
       return `
@@ -953,7 +1032,7 @@
       </div>`;
     }).join('');
 
-    const ultimos = [...servicos].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
+    const ultimos = [...servicosDoMes].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
     const cont = $('#p-ultimos');
     if(ultimos.length === 0){
       cont.innerHTML = emptyState('📋','Ainda não há serviços registados.<br>Toca em “Nova” para começar.');
@@ -973,7 +1052,7 @@
       <div class="servico-top">
         <div>
           <div class="servico-cliente">${escapeHTML(f.cliente)}</div>
-          <div class="servico-data">${fmtDate(f.data)} · ${f.horas}h</div>
+          <div class="servico-data">${fmtDate(f.data)}${f.horas ? ' · ' + escapeHTML(f.horas) : ''}</div>
         </div>
         <div class="servico-valor">${fmtMoney(f.valor)}</div>
       </div>
@@ -1135,61 +1214,82 @@
     });
   };
 
-  /* ---------- RELATORIO SEMANAL ---------- */
-  function getWeekRange(offset){
-    const now = new Date();
-    const day = now.getDay();
-    const diffToMonday = (day === 0 ? -6 : 1 - day);
-    const monday = new Date(now);
-    monday.setHours(0,0,0,0);
-    monday.setDate(now.getDate() + diffToMonday + offset*7);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23,59,59,999);
-    return {monday, sunday};
+  /* ---------- RELATÓRIOS ---------- */
+  function popularSeletorPeriodo(){
+    const sel = $('#periodo-select');
+    const valorAtual = sel.value;
+    const meses = mesesDisponiveis();
+    const mesAtual = chaveMesAtual();
+    const mesAnterior = chaveMesAnterior();
+    let opcoes = `<option value="atual">Mês atual — ${nomeMes(mesAtual)}</option>`;
+    if(meses.includes(mesAnterior)){
+      opcoes += `<option value="anterior">Mês anterior — ${nomeMes(mesAnterior)}</option>`;
+    }
+    const outros = meses.filter(m => m !== mesAtual && m !== mesAnterior);
+    if(outros.length){
+      opcoes += `<optgroup label="Outros meses">`;
+      opcoes += outros.map(m => `<option value="${m}">${nomeMes(m)}</option>`).join('');
+      opcoes += `</optgroup>`;
+    }
+    opcoes += `<option value="tudo">Todo o histórico</option>`;
+    sel.innerHTML = opcoes;
+    if(valorAtual && [...sel.options].some(o => o.value === valorAtual)) sel.value = valorAtual;
   }
 
-  function dentroDaSemana(dataIso, monday, sunday){
-    const d = new Date(dataIso + 'T12:00:00');
-    return d >= monday && d <= sunday;
+  function periodoFiltro(servicosArr, gastosArr){
+    const modo = $('#periodo-select').value || 'atual';
+    let chaveAlvo = null;
+    let rotulo = '';
+    if(modo === 'atual'){ chaveAlvo = chaveMesAtual(); rotulo = nomeMes(chaveAlvo); }
+    else if(modo === 'anterior'){ chaveAlvo = chaveMesAnterior(); rotulo = nomeMes(chaveAlvo); }
+    else if(modo === 'tudo'){ rotulo = 'Todo o histórico'; }
+    else { chaveAlvo = modo; rotulo = nomeMes(modo); }
+
+    let lista = chaveAlvo ? servicosArr.filter(f => chaveMes(f.data) === chaveAlvo) : servicosArr.slice();
+    let listaGastos = chaveAlvo ? gastosArr.filter(g => chaveMes(g.data) === chaveAlvo) : gastosArr.slice();
+
+    const termo = ($('#r-cliente-busca').value || '').trim().toLowerCase();
+    if(termo){
+      lista = lista.filter(f => (f.cliente || '').toLowerCase().includes(termo));
+      rotulo += ` · Cliente: "${$('#r-cliente-busca').value.trim()}"`;
+    }
+    return { lista, listaGastos, rotulo, termo };
   }
 
   function renderRelatorio(){
-    const {monday, sunday} = getWeekRange(weekOffset);
-    $('#week-label').textContent = `${fmtDateShort(monday)} – ${fmtDateShort(sunday)}`;
-    $('#week-sub').textContent = weekOffset === 0 ? 'Esta semana' : (weekOffset < 0 ? `${Math.abs(weekOffset)} semana(s) atrás` : `Daqui a ${weekOffset} semana(s)`);
-
-    const lista = servicos.filter(f => dentroDaSemana(f.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
-    const listaGastos = gastos.filter(g => dentroDaSemana(g.data, monday, sunday)).sort((a,b)=> new Date(a.data) - new Date(b.data));
+    popularSeletorPeriodo();
+    const { lista: listaBruta, listaGastos: listaGastosBruta, rotulo } = periodoFiltro(servicos, gastos);
+    const lista = listaBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
+    const listaGastos = listaGastosBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
 
     const faturado = lista.reduce((s,f)=>s+f.valor,0);
     const recebido = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const pendente = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
-    const horas = lista.reduce((s,f)=>s+f.horas,0);
-    const totalGastosSemana = listaGastos.reduce((s,g)=>s+g.valor,0);
+    const horas = lista.reduce((s,f)=>s+parseHoras(f.horas),0);
+    const totalGastosPeriodo = listaGastos.reduce((s,g)=>s+g.valor,0);
 
     $('#r-faturado').textContent = fmtMoney(faturado);
     $('#r-recebido').textContent = fmtMoney(recebido);
     $('#r-pendente').textContent = fmtMoney(pendente);
     $('#r-horas').textContent = horas.toLocaleString('pt-PT') + 'h';
-    $('#r-gastos').textContent = fmtMoney(totalGastosSemana);
-    $('#r-liquido').textContent = fmtMoney(recebido - totalGastosSemana);
+    $('#r-gastos').textContent = fmtMoney(totalGastosPeriodo);
+    $('#r-liquido').textContent = fmtMoney(recebido - totalGastosPeriodo);
     $('#r-qtd').textContent = lista.length;
     $('#r-qtd-gastos').textContent = listaGastos.length;
 
     $('#lista-relatorio').innerHTML = lista.length === 0
-      ? emptyState('📅','Sem serviços registados nesta semana.')
+      ? emptyState('📅','Sem serviços registados neste período.')
       : lista.map(f => servicoCardHTML(f, false)).join('');
 
     $('#lista-relatorio-gastos').innerHTML = listaGastos.length === 0
-      ? emptyState('🧾','Sem gastos registados nesta semana.')
+      ? emptyState('🧾','Sem despesas registadas neste período.')
       : listaGastos.map(gastoCardHTML).join('');
 
-    window.__weekData = {monday, sunday, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosSemana};
+    window.__relatorioData = { rotulo, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosPeriodo };
   }
 
-  $('#week-prev').addEventListener('click', () => { weekOffset--; renderRelatorio(); });
-  $('#week-next').addEventListener('click', () => { weekOffset++; renderRelatorio(); });
+  $('#periodo-select').addEventListener('change', renderRelatorio);
+  $('#r-cliente-busca').addEventListener('input', renderRelatorio);
 
   /* ---------- PDF EXPORT ---------- */
   function loadJsPDF(cb){
@@ -1208,7 +1308,7 @@
   function gerarPDF(){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-    const { monday, sunday, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosSemana } = window.__weekData;
+    const { rotulo, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosPeriodo } = window.__relatorioData;
 
     const marginX = 16;
     let y = 20;
@@ -1230,7 +1330,7 @@
     doc.setFont('helvetica','normal');
     doc.setFontSize(10);
     doc.setTextColor(120,120,120);
-    doc.text('Relatório semanal de serviços', marginX + 28, y + 3);
+    doc.text('Relatório de serviços', marginX + 28, y + 3);
 
     y += 20;
     doc.setDrawColor(230,230,230);
@@ -1240,7 +1340,7 @@
     doc.setTextColor(47,109,115);
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
-    doc.text(`Semana: ${monday.toLocaleDateString('pt-PT')} a ${sunday.toLocaleDateString('pt-PT')}`, marginX, y);
+    doc.text(`Período: ${rotulo}`, marginX, y);
     y += 10;
 
     const totals = [
@@ -1248,8 +1348,8 @@
       ['Total recebido', fmtMoney(recebido)],
       ['Total pendente', fmtMoney(pendente)],
       ['Horas trabalhadas', horas.toLocaleString('pt-PT') + 'h'],
-      ['Gastos gerais', fmtMoney(totalGastosSemana)],
-      ['Valor líquido', fmtMoney(recebido - totalGastosSemana)],
+      ['Gastos gerais', fmtMoney(totalGastosPeriodo)],
+      ['Valor líquido', fmtMoney(recebido - totalGastosPeriodo)],
       ['Serviços realizados', String(lista.length)]
     ];
     doc.setFontSize(10);
@@ -1271,7 +1371,7 @@
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(47,109,115);
-    doc.text('Serviços da semana', marginX, y);
+    doc.text('Serviços do período', marginX, y);
     y += 7;
 
     doc.setFontSize(9);
@@ -1291,7 +1391,7 @@
     if(lista.length === 0){
       doc.setFont('helvetica','normal');
       doc.setTextColor(150,150,150);
-      doc.text('Sem serviços registados nesta semana.', marginX, y);
+      doc.text('Sem serviços registados neste período.', marginX, y);
       y += 8;
     } else {
       lista.forEach(f => {
@@ -1301,7 +1401,7 @@
         doc.text(String(nomePessoa(f.pessoa || 'eu')).slice(0,16), marginX, y);
         doc.text(String(f.cliente).slice(0,20), marginX + 32, y);
         doc.text(fmtDate(f.data), marginX + 78, y);
-        doc.text(String(f.horas) + 'h', marginX + 100, y);
+        doc.text(f.horas ? String(f.horas) : '—', marginX + 100, y);
         doc.setTextColor(f.pago ? 58 : 229, f.pago ? 167 : 122, f.pago ? 109 : 68);
         doc.text(f.pago ? 'Recebido' : 'Pendente', marginX + 118, y);
         doc.setTextColor(34,34,34);
@@ -1319,14 +1419,14 @@
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(47,109,115);
-    doc.text('Gastos gerais da semana', marginX, y);
+    doc.text('Gastos gerais do período', marginX, y);
     y += 7;
 
     if(listaGastos.length === 0){
       doc.setFont('helvetica','normal');
       doc.setFontSize(9);
       doc.setTextColor(150,150,150);
-      doc.text('Sem gastos registados nesta semana.', marginX, y);
+      doc.text('Sem despesas registadas neste período.', marginX, y);
       y += 8;
     } else {
       doc.setFontSize(9);
@@ -1355,7 +1455,7 @@
     doc.setTextColor(170,170,170);
     doc.text('Gerado por ela organiza · ' + new Date().toLocaleDateString('pt-PT'), marginX, 290);
 
-    const fileName = `relatorio-ela-organiza-${monday.toISOString().slice(0,10)}.pdf`;
+    const fileName = `relatorio-ela-organiza-${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(fileName);
   }
 
@@ -1379,18 +1479,21 @@
       <div class="field"><label for="s-colab2">Nome do colaborador 2</label><input type="text" id="s-colab2" value="${escapeHTML(colaboradores.colab2)}"></div>
       <div class="field"><label for="s-colab3">Nome do colaborador 3</label><input type="text" id="s-colab3" value="${escapeHTML(colaboradores.colab3)}"></div>
       <button class="primary-btn" id="sheet-salvar-nomes">Guardar nomes</button>
-      <button class="secondary-btn demo-locked-btn" id="sheet-exportar">🔒 Exportar dados (backup)</button>
-      <button class="secondary-btn demo-locked-btn" id="sheet-importar">🔒 Importar dados de um backup</button>
+      <button class="secondary-btn" id="sheet-exportar">Exportar dados (backup)</button>
+      <button class="secondary-btn" id="sheet-importar">Importar dados de um backup</button>
       <input type="file" id="sheet-importar-file" accept="application/json,.json" style="display:none;">
       <button class="secondary-btn" id="sheet-trocar-chave">Trocar de utilizador</button>
-      <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Limpar todos os dados</button>
+      <div class="section-label" style="margin-top:24px;">Gerir Dados</div>
+      <p class="confirm-text" style="margin-top:0;">Esta opção apaga apenas os dados do perfil em uso (<strong>${escapeHTML(chaveAtual || 'este perfil')}</strong>). Os restantes perfis não são afetados.</p>
+      <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Apagar dados do perfil atual</button>
       <button class="secondary-btn" id="sheet-fechar">Fechar</button>
     `);
     $('#sheet-fechar').addEventListener('click', closeSheet);
     $('#sheet-limpar').addEventListener('click', confirmarLimparTudo);
     $('#sheet-trocar-chave').addEventListener('click', trocarUtilizador);
-    $('#sheet-exportar').addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
-    $('#sheet-importar').addEventListener('click', () => toast('Função bloqueada nesta versão de demonstração.'));
+    $('#sheet-exportar').addEventListener('click', exportarDados);
+    $('#sheet-importar').addEventListener('click', () => $('#sheet-importar-file').click());
+    $('#sheet-importar-file').addEventListener('change', importarDados);
     $('#sheet-salvar-nomes').addEventListener('click', () => {
       colaboradores.colab1 = $('#s-colab1').value.trim() || 'Colaborador 1';
       colaboradores.colab2 = $('#s-colab2').value.trim() || 'Colaborador 2';
@@ -1404,7 +1507,7 @@
     });
   });
 
-  function exportarDados(){
+  async function exportarDados(){
     const chaveAtual = storageGet(KEY_CHAVE_LABEL) || 'utilizador';
     const pacote = {
       app: 'ela.organiza',
@@ -1415,12 +1518,36 @@
       gastos: gastos,
       colaboradores: colaboradores
     };
-    const blob = new Blob([JSON.stringify(pacote, null, 2)], {type: 'application/json'});
+    const dataStr = new Date().toISOString().slice(0,10);
+    const nomeFicheiro = `ela-organiza-backup-${slugify(chaveAtual)}-${dataStr}.json`;
+    const conteudo = JSON.stringify(pacote, null, 2);
+    const blob = new Blob([conteudo], {type: 'application/json'});
+
+    // Tenta primeiro a folha de partilha nativa do telemóvel (permite enviar
+    // por Mail, WhatsApp, guardar em Ficheiros, etc.) — um site não consegue
+    // abrir o Mail com um anexo já pronto para um endereço fixo, mas a
+    // partilha nativa é a forma real e suportada de o utilizador escolher
+    // para onde enviar o backup.
+    try{
+      if(navigator.share && navigator.canShare && window.File){
+        const ficheiro = new File([blob], nomeFicheiro, {type: 'application/json'});
+        if(navigator.canShare({files: [ficheiro]})){
+          await navigator.share({files: [ficheiro], title: 'Backup ela.organiza', text: 'Backup dos meus dados do ela.organiza'});
+          storageSet(KEY_BACKUP, new Date().toISOString());
+          atualizarBannerBackup();
+          toast('Backup partilhado com sucesso.');
+          return;
+        }
+      }
+    }catch(e){
+      if(e && e.name === 'AbortError') return; // utilizador cancelou a partilha, não faz nada
+      // qualquer outro erro cai para a descarga normal abaixo
+    }
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const dataStr = new Date().toISOString().slice(0,10);
     a.href = url;
-    a.download = `ela-organiza-backup-${slugify(chaveAtual)}-${dataStr}.json`;
+    a.download = nomeFicheiro;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1461,10 +1588,11 @@
     ev.target.value = '';
   }
   function confirmarLimparTudo(){
+    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || 'este perfil';
     openSheet(`
       <div class="sheet-handle"></div>
-      <h2>Limpar todos os dados</h2>
-      <p class="confirm-text">Tem a certeza de que pretende apagar todos os registos? Esta ação não pode ser desfeita.</p>
+      <h2>Apagar dados do perfil atual</h2>
+      <p class="confirm-text">Tem a certeza de que pretende apagar permanentemente todos os dados do perfil <strong>${escapeHTML(chaveAtual)}</strong>? Esta ação não pode ser desfeita. Os restantes perfis não são afetados.</p>
       <div class="confirm-actions">
         <button class="btn-cancel" id="sheet-cancel2">Cancelar</button>
         <button class="btn-danger" id="sheet-confirm2">Apagar tudo</button>

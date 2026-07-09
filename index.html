@@ -657,23 +657,62 @@
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
   const KEY_MIGRADO = "elaOrganizaMigrado";
 
-  /* Armazenamento seguro: em alguns contextos (ex: ficheiro .html aberto
-     diretamente no iPhone via Ficheiros/AirDrop/Mail, origem file://) o
-     Safari bloqueia o acesso a localStorage e lança uma exceção. Sem este
-     wrapper, essa exceção pararia a execução do script logo no arranque,
-     antes de qualquer botão ser ligado. Aqui, se localStorage falhar,
-     usamos memória (os dados não persistem entre sessões, mas a app
-     continua a funcionar). */
-  let storageBlocked = false;
-  const memoryStore = {};
-  function storageGet(key){
-    try{ return localStorage.getItem(key); }
-    catch(e){ storageBlocked = true; return (key in memoryStore) ? memoryStore[key] : null; }
-  }
-  function storageSet(key, value){
-    try{ localStorage.setItem(key, value); }
-    catch(e){ storageBlocked = true; memoryStore[key] = value; }
-  }
+  /* ================= STORAGE PROVIDERS =================
+     Um "provider" é qualquer objeto com esta interface, de baixo nível,
+     sem tratamento de erros nem fallback — isso é responsabilidade do
+     StorageAdapter, não do provider:
+       get(key)         -> devolve o valor guardado, ou null/undefined
+       set(key, value)  -> guarda um valor
+       remove(key)      -> remove um valor
+
+     Hoje só existe o LocalStorageProvider. Para suportar no futuro outro
+     mecanismo (IndexedDB, um backend remoto, etc.), basta escrever um
+     novo objeto com esta mesma interface e indicar ao StorageAdapter
+     para usar esse provider em vez deste — sem alterar mais nenhum
+     ponto da aplicação, porque todo o resto do código só conhece
+     StorageAdapter.get/.set/.remove/.isBlocked, nunca o provider
+     diretamente. */
+  const LocalStorageProvider = {
+    get(key){ return localStorage.getItem(key); },
+    set(key, value){ localStorage.setItem(key, value); },
+    remove(key){ localStorage.removeItem(key); }
+  };
+
+  /* ================= STORAGE ADAPTER =================
+     Camada única de acesso ao armazenamento da aplicação. A partir daqui,
+     nenhuma outra parte do código acede a localStorage (nem a qualquer
+     outro mecanismo de armazenamento) diretamente — tudo passa por
+     StorageAdapter.get() / .set() / .remove(). O StorageAdapter não sabe
+     nem quer saber COMO os dados são guardados por baixo — isso é
+     delegado inteiramente ao "provider" escolhido (ver acima). O
+     StorageAdapter só trata dos aspetos comuns a qualquer provider:
+     capturar falhas e cair para memória (ex: quando o armazenamento
+     está bloqueado ou indisponível, como acontece com localStorage num
+     ficheiro .html aberto diretamente no iPhone via Ficheiros/AirDrop/
+     Mail, origem file://, onde o Safari lança uma exceção ao aceder a
+     localStorage). Sem esse fallback, essa exceção pararia a execução
+     do script logo no arranque, antes de qualquer botão ser ligado.
+
+     Nesta etapa o único provider existente continua a ser o
+     LocalStorageProvider — o comportamento da aplicação não muda. */
+  const StorageAdapter = (function(provider){
+    let blocked = false;
+    const memoryStore = {};
+    function get(key){
+      try{ return provider.get(key); }
+      catch(e){ blocked = true; return (key in memoryStore) ? memoryStore[key] : null; }
+    }
+    function set(key, value){
+      try{ provider.set(key, value); }
+      catch(e){ blocked = true; memoryStore[key] = value; }
+    }
+    function remove(key){
+      try{ provider.remove(key); }
+      catch(e){ blocked = true; delete memoryStore[key]; }
+    }
+    function isBlocked(){ return blocked; }
+    return { get, set, remove, isBlocked };
+  })(LocalStorageProvider);
 
   let servicos = [];
   let gastos = [];
@@ -693,9 +732,9 @@
   }
 
   function carregarDados(){
-    servicos = JSON.parse(storageGet(KEY) || "[]");
-    gastos = JSON.parse(storageGet(KEY_GASTOS) || "[]");
-    colaboradores = JSON.parse(storageGet(KEY_COLAB) || "null") || {
+    servicos = JSON.parse(StorageAdapter.get(KEY) || "[]");
+    gastos = JSON.parse(StorageAdapter.get(KEY_GASTOS) || "[]");
+    colaboradores = JSON.parse(StorageAdapter.get(KEY_COLAB) || "null") || {
       eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
     };
   }
@@ -707,24 +746,24 @@
     KEY_COLAB = "elaOrganizaColaboradores::" + slug;
     KEY_BACKUP = "elaOrganizaUltimoBackup::" + slug;
     KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso::" + slug;
-    if(!storageGet(KEY_PRIMEIRO_USO)) storageSet(KEY_PRIMEIRO_USO, new Date().toISOString());
+    if(!StorageAdapter.get(KEY_PRIMEIRO_USO)) StorageAdapter.set(KEY_PRIMEIRO_USO, new Date().toISOString());
     KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
 
     // Migração única: se esta é a primeira vez que uma chave é usada neste
     // aparelho e já existiam dados antigos (sem chave), passamos esses
     // dados para a primeira chave criada, para não perder nada.
-    if(!storageGet(KEY_MIGRADO)){
-      const legadoServicos = storageGet("elaOrganizaFaxinas");
-      const legadoGastos = storageGet("elaOrganizaGastos");
-      const legadoColab = storageGet("elaOrganizaColaboradores");
-      if(legadoServicos) storageSet(KEY, legadoServicos);
-      if(legadoGastos) storageSet(KEY_GASTOS, legadoGastos);
-      if(legadoColab) storageSet(KEY_COLAB, legadoColab);
-      storageSet(KEY_MIGRADO, "1");
+    if(!StorageAdapter.get(KEY_MIGRADO)){
+      const legadoServicos = StorageAdapter.get("elaOrganizaFaxinas");
+      const legadoGastos = StorageAdapter.get("elaOrganizaGastos");
+      const legadoColab = StorageAdapter.get("elaOrganizaColaboradores");
+      if(legadoServicos) StorageAdapter.set(KEY, legadoServicos);
+      if(legadoGastos) StorageAdapter.set(KEY_GASTOS, legadoGastos);
+      if(legadoColab) StorageAdapter.set(KEY_COLAB, legadoColab);
+      StorageAdapter.set(KEY_MIGRADO, "1");
     }
 
-    storageSet(KEY_CHAVE_ATIVA, slug);
-    storageSet(KEY_CHAVE_LABEL, chaveOriginal.trim());
+    StorageAdapter.set(KEY_CHAVE_ATIVA, slug);
+    StorageAdapter.set(KEY_CHAVE_LABEL, chaveOriginal.trim());
     carregarDados();
 
     const userChip = document.getElementById('user-chip');
@@ -740,7 +779,7 @@
     resetForm();
     resetFormGasto();
     renderPainel();
-    if(storageBlocked){
+    if(StorageAdapter.isBlocked()){
       setTimeout(() => toast('Aviso: guardar dados não está disponível a abrir o ficheiro diretamente. Instale a app através de um servidor/link para guardar os registos.'), 600);
     } else {
       setTimeout(verificarLembreteBackupModal, 700);
@@ -748,7 +787,7 @@
   }
 
   function trocarUtilizador(){
-    storageSet(KEY_CHAVE_ATIVA, "");
+    StorageAdapter.set(KEY_CHAVE_ATIVA, "");
     location.reload();
   }
 
@@ -761,9 +800,9 @@
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
 
-  function persist(){ storageSet(KEY, JSON.stringify(servicos)); }
-  function persistGastos(){ storageSet(KEY_GASTOS, JSON.stringify(gastos)); }
-  function persistColab(){ storageSet(KEY_COLAB, JSON.stringify(colaboradores)); }
+  function persist(){ StorageAdapter.set(KEY, JSON.stringify(servicos)); }
+  function persistGastos(){ StorageAdapter.set(KEY_GASTOS, JSON.stringify(gastos)); }
+  function persistColab(){ StorageAdapter.set(KEY_COLAB, JSON.stringify(colaboradores)); }
   function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
 
   const fmtMoney = (n) => new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR'}).format(n || 0);
@@ -946,7 +985,7 @@
   function atualizarBannerBackup(){
     const banner = document.getElementById('backup-banner');
     if(!banner) return;
-    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
+    const referencia = StorageAdapter.get(KEY_BACKUP) || StorageAdapter.get(KEY_PRIMEIRO_USO);
     if(!referencia){ banner.style.display = 'none'; return; }
     const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
     banner.style.display = (dias >= 7 && servicos.length > 0) ? 'flex' : 'none';
@@ -954,12 +993,12 @@
 
   function verificarLembreteBackupModal(){
     if(servicos.length === 0) return;
-    const referencia = storageGet(KEY_BACKUP) || storageGet(KEY_PRIMEIRO_USO);
+    const referencia = StorageAdapter.get(KEY_BACKUP) || StorageAdapter.get(KEY_PRIMEIRO_USO);
     if(!referencia) return;
     const diasBackup = (Date.now() - new Date(referencia).getTime()) / 86400000;
     if(diasBackup < 7) return;
 
-    const adiado = storageGet(KEY_LEMBRETE_ADIADO);
+    const adiado = StorageAdapter.get(KEY_LEMBRETE_ADIADO);
     if(adiado){
       const diasAdiado = (Date.now() - new Date(adiado).getTime()) / 86400000;
       if(diasAdiado < 7) return;
@@ -975,7 +1014,7 @@
       </div>
     `);
     $('#sheet-backup-depois').addEventListener('click', () => {
-      storageSet(KEY_LEMBRETE_ADIADO, new Date().toISOString());
+      StorageAdapter.set(KEY_LEMBRETE_ADIADO, new Date().toISOString());
       closeSheet();
     });
     $('#sheet-backup-fazer').addEventListener('click', () => {
@@ -1470,7 +1509,7 @@
   $('#overlay').addEventListener('click', (e) => { if(e.target.id === 'overlay') closeSheet(); });
 
   $('#btn-settings').addEventListener('click', () => {
-    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || '';
+    const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || '';
     openSheet(`
       <div class="sheet-handle"></div>
       <h2>Definições</h2>
@@ -1508,7 +1547,7 @@
   });
 
   async function exportarDados(){
-    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || 'utilizador';
+    const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || 'utilizador';
     const pacote = {
       app: 'ela.organiza',
       versao: 1,
@@ -1533,7 +1572,7 @@
         const ficheiro = new File([blob], nomeFicheiro, {type: 'application/json'});
         if(navigator.canShare({files: [ficheiro]})){
           await navigator.share({files: [ficheiro], title: 'Backup ela.organiza', text: 'Backup dos meus dados do ela.organiza'});
-          storageSet(KEY_BACKUP, new Date().toISOString());
+          StorageAdapter.set(KEY_BACKUP, new Date().toISOString());
           atualizarBannerBackup();
           toast('Backup partilhado com sucesso.');
           return;
@@ -1552,7 +1591,7 @@
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 2000);
-    storageSet(KEY_BACKUP, new Date().toISOString());
+    StorageAdapter.set(KEY_BACKUP, new Date().toISOString());
     atualizarBannerBackup();
     toast('Backup exportado. Guarda o ficheiro para usares noutro aparelho.');
   }
@@ -1588,7 +1627,7 @@
     ev.target.value = '';
   }
   function confirmarLimparTudo(){
-    const chaveAtual = storageGet(KEY_CHAVE_LABEL) || 'este perfil';
+    const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || 'este perfil';
     openSheet(`
       <div class="sheet-handle"></div>
       <h2>Apagar dados do perfil atual</h2>
@@ -1614,8 +1653,8 @@
   }
 
   /* ---------- INIT ---------- */
-  const chaveGuardada = storageGet(KEY_CHAVE_LABEL);
-  const chaveAtivaGuardada = storageGet(KEY_CHAVE_ATIVA);
+  const chaveGuardada = StorageAdapter.get(KEY_CHAVE_LABEL);
+  const chaveAtivaGuardada = StorageAdapter.get(KEY_CHAVE_ATIVA);
   if(chaveAtivaGuardada && chaveGuardada){
     iniciarApp(chaveGuardada);
   } else {

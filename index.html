@@ -354,6 +354,28 @@
   }
   .gate-card button{width:100%;}
   .gate-error{color:var(--alert); font-size:12.5px; margin:-6px 0 12px; text-align:left;}
+  .gate-status{color:var(--muted); font-size:12.5px; margin-top:10px;}
+  .diag-panel{
+    margin-top:18px; padding:12px; border:1.5px dashed var(--alert); border-radius:var(--radius-sm);
+    background:#fff8f4; text-align:left;
+  }
+  .diag-panel-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; font-size:13px;}
+  .diag-panel-header button{
+    background:none; border:1px solid var(--border); border-radius:8px; padding:4px 10px; font-size:12px; color:var(--text);
+  }
+  .diag-texto{
+    width:100%; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:11px; line-height:1.5;
+    color:var(--text); background:#fff; border:1px solid var(--border); border-radius:8px; padding:8px;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .diag-hint{font-size:11px; color:var(--muted); margin:6px 0 0;}
+  .gate-phone-row{display:flex; gap:8px; margin-bottom:14px;}
+  .gate-phone-prefix{
+    display:flex; align-items:center; justify-content:center; padding:0 12px;
+    border-radius:var(--radius-sm); border:1.5px solid var(--border); font-size:15px;
+    color:var(--text); font-weight:600; background:var(--card);
+  }
+  .gate-phone-row input{margin-bottom:0;}
 
   .backup-banner{
     display:flex; align-items:center; gap:12px; background:#FFF4EC; border:1.5px solid #F3D4B8;
@@ -380,12 +402,29 @@
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="gate-brand"><span class="w-ela">ela.</span><span class="w-organiza">organiza</span></div>
-    <p class="gate-sub">Digita a tua chave para aceder aos teus registos. Formato: <strong>ela.</strong> + o teu nome. Ex: ela.carla</p>
+    <p class="gate-sub">Entra com o teu telemóvel, utilizador e PIN. Se ainda não tens conta, é criada automaticamente.</p>
     <form id="gate-form">
-      <input type="text" id="gate-input" placeholder="ela.carla" value="ela." autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      <div class="gate-phone-row">
+        <span class="gate-phone-prefix">+351</span>
+        <input type="tel" id="gate-telefone" placeholder="912 345 678" inputmode="numeric" autocomplete="off" maxlength="15">
+      </div>
+      <div class="gate-phone-row">
+        <span class="gate-phone-prefix">ela.</span>
+        <input type="text" id="gate-utilizador" placeholder="carlaassis" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      </div>
+      <input type="password" id="gate-pin" placeholder="PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
       <p id="gate-error" class="gate-error" style="display:none;"></p>
-      <button type="submit" class="primary-btn">Entrar</button>
+      <button type="submit" class="primary-btn" id="gate-submit">Entrar</button>
+      <p id="gate-status" class="gate-status" style="display:none;"></p>
     </form>
+    <div id="diag-panel" class="diag-panel" style="display:none;">
+      <div class="diag-panel-header">
+        <strong>🔧 Modo Diagnóstico (temporário)</strong>
+        <button type="button" id="diag-fechar">Fechar</button>
+      </div>
+      <textarea id="diag-texto" class="diag-texto" readonly rows="14"></textarea>
+      <p class="diag-hint">Toca no texto acima → Selecionar tudo → Copiar, e envia.</p>
+    </div>
   </div>
 </div>
 <div class="app">
@@ -590,8 +629,8 @@
       </div>
 
       <div class="help-block">
-        <h3>7. Trocar de utilizador</h3>
-        <p>Se emprestares o telemóvel a outra pessoa, usa <strong>Definições → Trocar de utilizador</strong> para sair da tua chave e deixar a outra pessoa entrar com a dela.</p>
+        <h3>7. Sair da conta</h3>
+        <p>Se emprestares o telemóvel a outra pessoa, usa <strong>Definições → Sair da conta</strong> para sair e deixar a outra pessoa entrar com a conta dela.</p>
       </div>
     </section>
 
@@ -714,6 +753,173 @@
     return { get, set, remove, isBlocked };
   })(LocalStorageProvider);
 
+  /* ================= SUPABASE (preparação — Etapa 1) =================
+     Isto é só infraestrutura, ainda sem qualquer uso: nada no resto da
+     aplicação chama nada daqui. Não há autenticação, não há
+     sincronização, não há alteração de comportamento — o
+     StorageAdapter/LocalStorageProvider continuam a ser a única forma
+     como a app lê e grava dados, exatamente como até agora.
+
+     Não existe conceito de ficheiro ".env" numa página HTML estática
+     sem servidor nem passo de build (isto não corre por npm nem
+     Next.js) — por isso a Project URL e a Publishable Key ficam
+     guardadas aqui, como constantes simples, em vez de variáveis de
+     ambiente. É AQUI, e só aqui, que deves colocar/atualizar esses
+     valores no futuro.
+
+     IMPORTANTE: só a "Publishable Key" (chave pública/anon) deve
+     alguma vez ir aqui. A "Service Role Key" nunca deve aparecer em
+     código que corre no telemóvel/navegador da utilizadora — essa
+     chave dá acesso total à base de dados sem restrições, e por isso
+     só pode existir num servidor de confiança, nunca aqui. */
+  const SUPABASE_URL = "https://cibscdftspasmivnxeqa.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_sCzEzT9u0pyhGjCAcREggA_6yLBbe7c";
+
+  let supabaseClient = null;
+
+  /* Carrega o SDK do Supabase só quando for pedido (o mesmo padrão já
+     usado para o gerador de PDF, mais abaixo neste ficheiro) — assim a
+     app não faz nenhum pedido de rede extra enquanto ninguém a usar.
+     Nesta etapa, esta função existe mas não é chamada por nada. */
+  function loadSupabase(cb, onError){
+    if(window.supabase && window.supabase.createClient){
+      if(!supabaseClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      cb(supabaseClient);
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
+    s.onload = () => {
+      supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+      cb(supabaseClient);
+    };
+    s.onerror = () => {
+      toast('Não foi possível ligar ao Supabase. Verifique a ligação à internet.');
+      if(onError) onError();
+    };
+    document.head.appendChild(s);
+  }
+
+  /* ================= SYNC MANAGER — Etapa 4 =================
+     Sincroniza servicos e gastos com o Supabase em segundo plano,
+     sempre que houver internet. É só uma camada POR CIMA do
+     StorageAdapter/localStorage — nunca uma substituição. A app
+     continua 100% funcional offline; isto nunca bloqueia nem atrasa
+     nenhuma ação da utilizadora.
+
+     Como funciona: cada criação/edição/eliminação local entra numa
+     "fila de sincronização" guardada localmente. Sempre que há
+     internet (ao criar o registo, ao ligar a internet, ou ao entrar
+     na app), a fila é processada — cada item é enviado ao Supabase e,
+     só depois de confirmado, sai da fila. Se falhar (sem internet a
+     meio, por exemplo), fica na fila para a próxima tentativa —
+     nada se perde. */
+  const SyncManager = (function(){
+    let userId = null;
+    let filaKey = null;
+    let aProcessar = false;
+
+    function iniciar(uid){
+      userId = uid;
+      filaKey = "elaOrganizaFilaSync::" + uid;
+      tentarProcessarFila();
+    }
+
+    function parar(){
+      userId = null;
+      filaKey = null;
+    }
+
+    function lerFila(){
+      return JSON.parse(StorageAdapter.get(filaKey) || "[]");
+    }
+    function gravarFila(fila){
+      StorageAdapter.set(filaKey, JSON.stringify(fila));
+    }
+
+    function enfileirar(tabela, registo){
+      if(!userId) return;
+      const fila = lerFila().filter(item => item.id !== registo.id);
+      fila.push({ tabela: tabela, operacao: 'upsert', id: registo.id, payload: registo, tentativas: 0 });
+      gravarFila(fila);
+      tentarProcessarFila();
+    }
+
+    function enfileirarRemocao(tabela, id){
+      if(!userId) return;
+      const fila = lerFila().filter(item => item.id !== id);
+      fila.push({ tabela: tabela, operacao: 'delete', id: id, payload: null, tentativas: 0 });
+      gravarFila(fila);
+      tentarProcessarFila();
+    }
+
+    function mapearParaSupabase(tabela, registo){
+      const atualizado = new Date(registo.updatedAt || registo.createdAt || Date.now()).toISOString();
+      if(tabela === 'servicos'){
+        return {
+          id: registo.id, user_id: userId, pessoa: registo.pessoa || 'eu',
+          cliente: registo.cliente || '', data: registo.data, horas: registo.horas || null,
+          valor: registo.valor || 0, observacoes: registo.observacoes || null,
+          pago: !!registo.pago, updated_at: atualizado
+        };
+      }
+      return {
+        id: registo.id, user_id: userId, data: registo.data,
+        descricao: registo.descricao || '', valor: registo.valor || 0, updated_at: atualizado
+      };
+    }
+
+    function tentarProcessarFila(){
+      if(!userId || aProcessar) return;
+      if(typeof navigator !== 'undefined' && navigator.onLine === false) return;
+      const fila = lerFila();
+      if(fila.length === 0) return;
+      aProcessar = true;
+      loadSupabase(function(client){
+        processarSequencial(client, 0, function(){ aProcessar = false; });
+      }, function(){ aProcessar = false; });
+    }
+
+    function processarSequencial(client, index, aoTerminar){
+      const fila = lerFila();
+      if(index >= fila.length){ aoTerminar(); return; }
+      const item = fila[index];
+      let pedido;
+      try{
+        if(item.operacao === 'delete'){
+          pedido = client.from(item.tabela).delete().eq('id', item.id).eq('user_id', userId);
+        } else {
+          pedido = client.from(item.tabela).upsert(mapearParaSupabase(item.tabela, item.payload));
+        }
+      }catch(e){ aoTerminar(); return; } // nunca deixa um erro de sync afetar o resto da app
+      pedido.then(function(res){
+        if(res && res.error){ aoTerminar(); return; } // falhou, tenta de novo mais tarde
+        const restante = lerFila().filter(f => !(f.id === item.id && f.operacao === item.operacao));
+        gravarFila(restante);
+        processarSequencial(client, 0, aoTerminar);
+      }).catch(function(){ aoTerminar(); });
+    }
+
+    function puxarDoServidor(callback){
+      if(!userId) { callback(null, null); return; }
+      loadSupabase(function(client){
+        Promise.all([
+          client.from('servicos').select('*').eq('user_id', userId).is('deleted_at', null),
+          client.from('gastos').select('*').eq('user_id', userId).is('deleted_at', null)
+        ]).then(function(resultados){
+          const rs = resultados[0] || {}; const rg = resultados[1] || {};
+          callback(rs.data || null, rg.data || null);
+        }).catch(function(){ callback(null, null); });
+      }, function(){ callback(null, null); });
+    }
+
+    return { iniciar, parar, enfileirar, enfileirarRemocao, tentarProcessarFila, puxarDoServidor };
+  })();
+
+  if(typeof window.addEventListener === 'function'){
+    window.addEventListener('online', function(){ SyncManager.tentarProcessarFila(); });
+  }
+
   let servicos = [];
   let gastos = [];
   let colaboradores = { eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3" };
@@ -739,8 +945,9 @@
     };
   }
 
-  function iniciarApp(chaveOriginal){
-    const slug = slugify(chaveOriginal);
+  function iniciarApp(userId, label){
+    console.log('[DIAGNOSTICO] 3-local) Início de iniciarApp(). Antes de qualquer gravação em StorageAdapter/localStorage.', { userId: userId, label: label });
+    const slug = userId;
     KEY = "elaOrganizaFaxinas::" + slug;
     KEY_GASTOS = "elaOrganizaGastos::" + slug;
     KEY_COLAB = "elaOrganizaColaboradores::" + slug;
@@ -749,9 +956,9 @@
     if(!StorageAdapter.get(KEY_PRIMEIRO_USO)) StorageAdapter.set(KEY_PRIMEIRO_USO, new Date().toISOString());
     KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
 
-    // Migração única: se esta é a primeira vez que uma chave é usada neste
-    // aparelho e já existiam dados antigos (sem chave), passamos esses
-    // dados para a primeira chave criada, para não perder nada.
+    // Migração única: se esta é a primeira vez que esta conta é usada neste
+    // aparelho e já existiam dados antigos (do sistema local anterior, sem
+    // conta), passamos esses dados para a conta atual, para não perder nada.
     if(!StorageAdapter.get(KEY_MIGRADO)){
       const legadoServicos = StorageAdapter.get("elaOrganizaFaxinas");
       const legadoGastos = StorageAdapter.get("elaOrganizaGastos");
@@ -762,13 +969,16 @@
       StorageAdapter.set(KEY_MIGRADO, "1");
     }
 
-    StorageAdapter.set(KEY_CHAVE_ATIVA, slug);
-    StorageAdapter.set(KEY_CHAVE_LABEL, chaveOriginal.trim());
+    StorageAdapter.set(KEY_CHAVE_ATIVA, userId);
+    StorageAdapter.set(KEY_CHAVE_LABEL, label);
+    console.log('[DIAGNOSTICO] 4-local) Gravação em StorageAdapter concluída (KEY_CHAVE_ATIVA/KEY_CHAVE_LABEL). StorageAdapter.isBlocked() =', StorageAdapter.isBlocked());
     carregarDados();
+    console.log('[DIAGNOSTICO] 5-local) carregarDados() concluído. servicos.length =', servicos.length, 'gastos.length =', gastos.length);
+    SyncManager.iniciar(userId);
 
     const userChip = document.getElementById('user-chip');
     if(userChip){
-      userChip.textContent = chaveOriginal.trim();
+      userChip.textContent = label;
       userChip.style.display = 'inline-flex';
     }
 
@@ -783,12 +993,84 @@
       setTimeout(() => toast('Aviso: guardar dados não está disponível a abrir o ficheiro diretamente. Instale a app através de um servidor/link para guardar os registos.'), 600);
     } else {
       setTimeout(verificarLembreteBackupModal, 700);
+      setTimeout(sincronizarNoArranque, 900);
     }
   }
 
+  /* Ao entrar (ou reabrir a app), tenta buscar o que existe no servidor e
+     juntar com o que já está neste aparelho. Regra simples para esta
+     primeira versão: para cada registo, ganha quem tiver "updatedAt"
+     mais recente — nunca apaga nada às cegas. Isto acontece sempre em
+     segundo plano, depois da tela já estar visível com os dados locais,
+     para nunca atrasar a abertura da app. */
+  function sincronizarNoArranque(){
+    SyncManager.puxarDoServidor(function(servicosRemotos, gastosRemotos){
+      let mudou = false;
+      if(servicosRemotos){
+        servicos = fundirRegistos(servicos, servicosRemotos, mapearServicoDoServidor);
+        mudou = true;
+      }
+      if(gastosRemotos){
+        gastos = fundirRegistos(gastos, gastosRemotos, mapearGastoDoServidor);
+        mudou = true;
+      }
+      if(mudou){
+        persist();
+        persistGastos();
+        renderPainel();
+        if(document.getElementById('view-historico').classList.contains('active')) renderHistorico();
+        if(document.getElementById('view-gastos').classList.contains('active')) renderGastos();
+      }
+    });
+  }
+
+  function mapearServicoDoServidor(linha){
+    return {
+      id: linha.id, pessoa: linha.pessoa || 'eu', cliente: linha.cliente || '',
+      data: linha.data, horas: linha.horas || '', valor: Number(linha.valor) || 0,
+      observacoes: linha.observacoes || '', pago: !!linha.pago,
+      createdAt: new Date(linha.updated_at).getTime(), updatedAt: new Date(linha.updated_at).getTime()
+    };
+  }
+  function mapearGastoDoServidor(linha){
+    return {
+      id: linha.id, data: linha.data, descricao: linha.descricao || '',
+      valor: Number(linha.valor) || 0,
+      createdAt: new Date(linha.updated_at).getTime(), updatedAt: new Date(linha.updated_at).getTime()
+    };
+  }
+
+  function fundirRegistos(locais, remotos, mapear){
+    const porId = {};
+    locais.forEach(r => { porId[r.id] = r; });
+    remotos.forEach(linhaRemota => {
+      const remotoConvertido = mapear(linhaRemota);
+      const local = porId[remotoConvertido.id];
+      if(!local){
+        porId[remotoConvertido.id] = remotoConvertido; // só existe no servidor
+        return;
+      }
+      const localAtualizado = local.updatedAt || local.createdAt || 0;
+      if(remotoConvertido.updatedAt > localAtualizado){
+        porId[remotoConvertido.id] = remotoConvertido; // servidor é mais recente
+      }
+      // se o local for mais recente ou igual, mantém o local como está
+    });
+    return Object.values(porId);
+  }
+
   function trocarUtilizador(){
-    StorageAdapter.set(KEY_CHAVE_ATIVA, "");
-    location.reload();
+    function limparESair(){
+      SyncManager.parar();
+      StorageAdapter.set(KEY_CHAVE_ATIVA, "");
+      location.reload();
+    }
+    loadSupabase(function(client){
+      client.auth.signOut().then(limparESair).catch(limparESair);
+    });
+    // Se o Supabase não carregar (ex: sem internet), ainda assim sai
+    // localmente — não deixa a utilizadora presa no ecrã.
+    setTimeout(limparESair, 2500);
   }
 
   let historicoFilter = "todas";
@@ -949,7 +1231,8 @@
       valor: parseFloat($('#f-valor').value) || 0,
       observacoes: $('#f-obs').value.trim(),
       pago: pagoSelecionado === 'sim',
-      createdAt: id ? ((servicos.find(f=>f.id===id) || {}).createdAt || Date.now()) : Date.now()
+      createdAt: id ? ((servicos.find(f=>f.id===id) || {}).createdAt || Date.now()) : Date.now(),
+      updatedAt: Date.now()
     };
     if(id){
       servicos = servicos.map(f => f.id === id ? registo : f);
@@ -959,6 +1242,7 @@
       toast('Serviço guardado');
     }
     persist();
+    SyncManager.enfileirar('servicos', registo);
     resetForm();
     switchView('historico');
   });
@@ -1154,6 +1438,7 @@
     $('#sheet-confirm').addEventListener('click', () => {
       servicos = servicos.filter(f => f.id !== id);
       persist();
+      SyncManager.enfileirarRemocao('servicos', id);
       closeSheet();
       renderHistorico();
       renderPainel();
@@ -1179,7 +1464,8 @@
       descricao: $('#g-descricao').value.trim(),
       data: $('#g-data').value,
       valor: parseFloat($('#g-valor').value) || 0,
-      createdAt: id ? ((gastos.find(g=>g.id===id) || {}).createdAt || Date.now()) : Date.now()
+      createdAt: id ? ((gastos.find(g=>g.id===id) || {}).createdAt || Date.now()) : Date.now(),
+      updatedAt: Date.now()
     };
     if(id){
       gastos = gastos.map(g => g.id === id ? registo : g);
@@ -1189,6 +1475,7 @@
       toast('Gasto guardado');
     }
     persistGastos();
+    SyncManager.enfileirar('gastos', registo);
     resetFormGasto();
     renderGastos();
   });
@@ -1246,6 +1533,7 @@
     $('#sheet-confirm3').addEventListener('click', () => {
       gastos = gastos.filter(g => g.id !== id);
       persistGastos();
+      SyncManager.enfileirarRemocao('gastos', id);
       closeSheet();
       renderGastos();
       renderPainel();
@@ -1521,7 +1809,7 @@
       <button class="secondary-btn" id="sheet-exportar">Exportar dados (backup)</button>
       <button class="secondary-btn" id="sheet-importar">Importar dados de um backup</button>
       <input type="file" id="sheet-importar-file" accept="application/json,.json" style="display:none;">
-      <button class="secondary-btn" id="sheet-trocar-chave">Trocar de utilizador</button>
+      <button class="secondary-btn" id="sheet-trocar-chave">Sair da conta</button>
       <div class="section-label" style="margin-top:24px;">Gerir Dados</div>
       <p class="confirm-text" style="margin-top:0;">Esta opção apaga apenas os dados do perfil em uso (<strong>${escapeHTML(chaveAtual || 'este perfil')}</strong>). Os restantes perfis não são afetados.</p>
       <button class="secondary-btn" id="sheet-limpar" style="border-color:var(--alert); color:var(--alert);">Apagar dados do perfil atual</button>
@@ -1653,35 +1941,222 @@
   }
 
   /* ---------- INIT ---------- */
-  const chaveGuardada = StorageAdapter.get(KEY_CHAVE_LABEL);
-  const chaveAtivaGuardada = StorageAdapter.get(KEY_CHAVE_ATIVA);
-  if(chaveAtivaGuardada && chaveGuardada){
-    iniciarApp(chaveGuardada);
+  const contaGuardada = StorageAdapter.get(KEY_CHAVE_ATIVA);
+  const labelGuardado = StorageAdapter.get(KEY_CHAVE_LABEL);
+  if(contaGuardada && labelGuardado){
+    // Sessão já iniciada neste aparelho anteriormente — entra direto,
+    // sem pedir novo login, mesmo sem internet (Local First).
+    iniciarApp(contaGuardada, labelGuardado);
   } else {
     const gateForm = document.getElementById('gate-form');
-    const gateInput = document.getElementById('gate-input');
+    const gateTelefone = document.getElementById('gate-telefone');
+    const gateUtilizador = document.getElementById('gate-utilizador');
+    const gatePin = document.getElementById('gate-pin');
     const gateError = document.getElementById('gate-error');
-    if(gateInput){
-      // cursor sempre depois do "ela." ao focar, para facilitar digitar só o nome
-      gateInput.addEventListener('focus', function(){
-        if(this.value === 'ela.') this.setSelectionRange(4,4);
+    const gateStatus = document.getElementById('gate-status');
+    const gateSubmit = document.getElementById('gate-submit');
+
+    if(gateUtilizador){
+      gateUtilizador.addEventListener('input', function(){
+        let v = this.value.toLowerCase();
+        v = v.replace(/^ela\.+/, ''); // remove "ela." caso a pessoa o escreva por engano
+        v = v.replace(/[^a-z0-9.]/g, ''); // só letras, números e ponto
+        this.value = v;
       });
     }
+
+    function mostrarErro(msg){
+      if(gateError){ gateError.textContent = msg; gateError.style.display = 'block'; }
+      if(gateStatus) gateStatus.style.display = 'none';
+      if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
+    }
+    function mostrarEstado(msg){
+      if(gateStatus){ gateStatus.textContent = msg; gateStatus.style.display = 'block'; }
+      if(gateError) gateError.style.display = 'none';
+    }
+
+    /* ---------- MODO DIAGNÓSTICO (temporário) ----------
+       Mostra na própria interface, sem precisar de nenhuma ferramenta
+       externa, exatamente onde e porquê o login/criação de conta falhou.
+       Isto não altera nenhuma lógica da aplicação — só torna visível
+       informação que já existia. Deve ser removido quando o problema
+       estiver resolvido. */
+    function mostrarDiagnostico(info){
+      const painel = document.getElementById('diag-panel');
+      const texto = document.getElementById('diag-texto');
+      if(!painel || !texto) return;
+      const linhas = [
+        'ETAPA: ' + (info.etapa || '-'),
+        'FUNÇÃO EXECUTADA: ' + (info.funcao || '-'),
+        'RPC/CHAMADA: ' + (info.rpc || '-'),
+        'CÓDIGO HTTP: ' + (info.codigoHttp !== undefined && info.codigoHttp !== null ? info.codigoHttp : '-'),
+        'MENSAGEM DE ERRO: ' + (info.mensagem || '-'),
+        'STACK: ' + (info.stack || '-'),
+        'RESPOSTA COMPLETA DO SUPABASE (data + error):',
+        info.respostaCompleta || '-',
+        '',
+        'Hora: ' + new Date().toISOString()
+      ];
+      texto.value = linhas.join('\n');
+      painel.style.display = 'block';
+    }
+    const diagFechar = document.getElementById('diag-fechar');
+    if(diagFechar){
+      diagFechar.addEventListener('click', function(){
+        document.getElementById('diag-panel').style.display = 'none';
+      });
+    }
+
     if(gateForm){
       gateForm.addEventListener('submit', function(ev){
         ev.preventDefault();
-        const val = (gateInput.value || "").trim();
-        const valido = /^ela\.[a-zA-Z0-9]+$/.test(val);
-        if(!valido){
-          if(gateError){
-            gateError.textContent = 'A chave tem de começar com "ela." seguido do teu nome. Exemplo: ela.carla';
-            gateError.style.display = 'block';
-          }
-          gateInput.focus();
+        const telefoneDigitos = (gateTelefone.value || '').replace(/\D/g, '');
+        const sufixoUtilizador = (gateUtilizador.value || '').trim();
+        const utilizador = sufixoUtilizador ? ('ela.' + sufixoUtilizador) : '';
+        const pin = (gatePin.value || '').trim();
+
+        if(telefoneDigitos.length < 6){
+          mostrarErro('Introduz um número de telemóvel válido.');
+          gateTelefone.focus();
           return;
         }
-        if(gateError) gateError.style.display = 'none';
-        iniciarApp(val);
+        if(!utilizador){
+          mostrarErro('Introduz um nome de utilizador.');
+          gateUtilizador.focus();
+          return;
+        }
+        if(!/^\d{4}$/.test(pin)){
+          mostrarErro('O PIN tem de ter exatamente 4 dígitos.');
+          gatePin.focus();
+          return;
+        }
+
+        const telefoneCompleto = '+351' + telefoneDigitos;
+        const emailSintetico = slugify(utilizador) + '@contas.elaorganiza.app';
+        const senhaComposta = telefoneCompleto + ':' + pin;
+
+        if(gateSubmit){ gateSubmit.disabled = true; gateSubmit.textContent = 'A entrar…'; }
+        mostrarEstado('Um momento…');
+
+        console.log('[DIAGNOSTICO] 1) A carregar o SDK do Supabase (antes de qualquer chamada)...');
+        loadSupabase(function(client){
+          console.log('[DIAGNOSTICO] 2) SDK carregado, cliente criado. A chamar rpc("username_existe")...', { p_label: utilizador });
+          client.rpc('username_existe', { p_label: utilizador }).then(function(resp){
+            console.log('[DIAGNOSTICO] 3) Resposta de username_existe recebida:', JSON.stringify({ data: resp.data, error: resp.error }));
+            if(resp.error){
+              mostrarDiagnostico({
+                etapa: '3) Resposta de username_existe', funcao: 'client.rpc()', rpc: 'username_existe',
+                codigoHttp: resp.status, mensagem: resp.error.message, stack: resp.error.stack,
+                respostaCompleta: JSON.stringify({ data: resp.data, error: resp.error }, null, 2)
+              });
+              mostrarErro('Não foi possível ligar ao servidor (' + resp.error.message + ').');
+              return;
+            }
+            const existe = resp.data;
+            if(!existe){
+              // Cria conta nova
+              console.log('[DIAGNOSTICO] 4) Utilizador nao existe. A chamar auth.signUp()...', { email: emailSintetico });
+              client.auth.signUp({ email: emailSintetico, password: senhaComposta }).then(function(res){
+                console.log('[DIAGNOSTICO] 5) Resposta de signUp recebida:', JSON.stringify({ data: res.data, error: res.error }));
+                if(res.error || !res.data || !res.data.user){
+                  mostrarDiagnostico({
+                    etapa: '5) Resposta de auth.signUp', funcao: 'client.auth.signUp()', rpc: '-',
+                    codigoHttp: res.error ? res.error.status : '-', mensagem: res.error ? res.error.message : 'sem utilizador devolvido',
+                    stack: res.error ? res.error.stack : '-',
+                    respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
+                  });
+                  mostrarErro('Não foi possível criar a conta' + (res.error ? ' (' + res.error.message + ').' : '.'));
+                  return;
+                }
+                const userId = res.data.user.id;
+                console.log('[DIAGNOSTICO] 6) Conta criada, userId =', userId, '. A gravar perfil (profiles.insert)...');
+                client.from('profiles').insert({ id: userId, label: utilizador, telefone: telefoneCompleto }).then(function(insertRes){
+                  console.log('[DIAGNOSTICO] 7) Resposta de profiles.insert recebida:', JSON.stringify({ data: insertRes.data, error: insertRes.error }));
+                  if(insertRes.error){
+                    mostrarDiagnostico({
+                      etapa: '7) Resposta de profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
+                      codigoHttp: insertRes.status, mensagem: insertRes.error.message, stack: insertRes.error.stack,
+                      respostaCompleta: JSON.stringify({ data: insertRes.data, error: insertRes.error }, null, 2)
+                    });
+                    mostrarErro('Conta criada, mas houve um problema a guardar o perfil (' + insertRes.error.message + ').');
+                    return;
+                  }
+                  console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
+                  iniciarApp(userId, utilizador);
+                  console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
+                }).catch(function(e){
+                  console.log('[DIAGNOSTICO] ERRO em profiles.insert (rejeicao/exception):', e && e.message, e);
+                  mostrarDiagnostico({
+                    etapa: '7) Exceção em profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
+                    codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+                  });
+                  mostrarErro('Erro de rede a guardar o perfil: ' + e.message);
+                });
+              }).catch(function(e){
+                console.log('[DIAGNOSTICO] ERRO em auth.signUp (rejeicao/exception):', e && e.message, e);
+                mostrarDiagnostico({
+                  etapa: '5) Exceção em auth.signUp', funcao: 'client.auth.signUp()', rpc: '-',
+                  codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+                });
+                mostrarErro('Erro de rede ao criar conta: ' + e.message);
+              });
+            } else {
+              // Conta já existe — valida telemóvel + PIN
+              console.log('[DIAGNOSTICO] 4) Utilizador já existe. A chamar auth.signInWithPassword()...', { email: emailSintetico });
+              client.auth.signInWithPassword({ email: emailSintetico, password: senhaComposta }).then(function(res){
+                console.log('[DIAGNOSTICO] 5) Resposta de signInWithPassword recebida:', JSON.stringify({ data: res.data, error: res.error }));
+                if(res.error || !res.data || !res.data.user){
+                  mostrarDiagnostico({
+                    etapa: '5) Resposta de auth.signInWithPassword', funcao: 'client.auth.signInWithPassword()', rpc: '-',
+                    codigoHttp: res.error ? res.error.status : '-', mensagem: res.error ? res.error.message : 'sem utilizador devolvido',
+                    stack: res.error ? res.error.stack : '-',
+                    respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
+                  });
+                  mostrarErro('Telemóvel, utilizador ou PIN incorretos.');
+                  return;
+                }
+                const userId = res.data.user.id;
+                console.log('[DIAGNOSTICO] 6) Login OK, userId =', userId, '. A ler perfil (profiles.select)...');
+                client.from('profiles').select('label').eq('id', userId).single().then(function(profRes){
+                  console.log('[DIAGNOSTICO] 7) Resposta de profiles.select recebida:', JSON.stringify({ data: profRes.data, error: profRes.error }));
+                  const label = (profRes.data && profRes.data.label) ? profRes.data.label : utilizador;
+                  console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
+                  iniciarApp(userId, label);
+                  console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
+                }).catch(function(e){
+                  console.log('[DIAGNOSTICO] ERRO em profiles.select (rejeicao/exception):', e && e.message, e);
+                  mostrarDiagnostico({
+                    etapa: '7) Exceção em profiles.select', funcao: "client.from('profiles').select()", rpc: '-',
+                    codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+                  });
+                  mostrarErro('Erro de rede a carregar o perfil: ' + e.message);
+                });
+              }).catch(function(e){
+                console.log('[DIAGNOSTICO] ERRO em auth.signInWithPassword (rejeicao/exception):', e && e.message, e);
+                mostrarDiagnostico({
+                  etapa: '5) Exceção em auth.signInWithPassword', funcao: 'client.auth.signInWithPassword()', rpc: '-',
+                  codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+                });
+                mostrarErro('Erro de rede ao entrar: ' + e.message);
+              });
+            }
+          }).catch(function(e){
+            console.log('[DIAGNOSTICO] ERRO em rpc("username_existe") (rejeicao/exception):', e && e.message, e);
+            mostrarDiagnostico({
+              etapa: '3) Exceção em rpc(username_existe)', funcao: 'client.rpc()', rpc: 'username_existe',
+              codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+            });
+            mostrarErro('Erro de rede ao contactar o servidor: ' + e.message);
+          });
+        }, function(){
+          console.log('[DIAGNOSTICO] ERRO: loadSupabase falhou (SDK nao carregou / sem internet).');
+          mostrarDiagnostico({
+            etapa: '1) loadSupabase (antes de qualquer chamada)', funcao: 'loadSupabase() / <script> CDN', rpc: '-',
+            codigoHttp: '-', mensagem: 'Não foi possível carregar o SDK do Supabase (falha de rede ou CDN bloqueado).',
+            stack: '-', respostaCompleta: '-'
+          });
+          mostrarErro('Sem ligação à internet. É necessária internet para entrar ou criar conta pela primeira vez.');
+        });
       });
     }
   }

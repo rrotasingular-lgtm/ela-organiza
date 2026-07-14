@@ -145,6 +145,9 @@
   .stat-card.success .value{color:var(--success);}
   .stat-card.alert .value{color:var(--alert);}
   .stat-card.primary .value{color:var(--secondary);}
+  .stat-card-clicavel{cursor:pointer;}
+  .stat-card-clicavel:active{transform:scale(0.97);}
+  .stat-info-icon{font-size:11px; opacity:0.65; vertical-align:middle;}
 
   .section-label{
     font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase;
@@ -357,6 +360,9 @@
   .gate-card button{width:100%;}
   .gate-error{color:var(--alert); font-size:12.5px; margin:-6px 0 12px; text-align:left;}
   .gate-status{color:var(--muted); font-size:12.5px; margin-top:10px;}
+  .gate-forgot{background:none; border:none; padding:0; color:var(--secondary); font-size:12.5px; font-weight:600; text-decoration:underline; text-align:center; display:block; margin:2px auto 16px; cursor:pointer;}
+  .gate-forgot-msg{font-size:13.5px; color:var(--text); line-height:1.55; margin:0 0 16px;}
+  .gate-forgot-msg a{color:var(--secondary); font-weight:600;}
   .diag-panel{
     margin-top:18px; padding:12px; border:1.5px dashed var(--alert); border-radius:var(--radius-sm);
     background:#fff8f4; text-align:left;
@@ -414,7 +420,16 @@
       <input type="password" id="gate-pin" placeholder="PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
       <p id="gate-error" class="gate-error" style="display:none;"></p>
       <button type="submit" class="primary-btn" id="gate-submit">Entrar</button>
+      <button type="button" class="gate-forgot" id="gate-forgot-btn">Esqueci o PIN</button>
       <p id="gate-status" class="gate-status" style="display:none;"></p>
+    </form>
+    <form id="pin-troca-form" style="display:none;">
+      <p class="gate-sub">Este PIN é temporário. Define um novo PIN de 4 dígitos, só teu, para continuares.</p>
+      <input type="password" id="pin-troca-novo" placeholder="Novo PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+      <input type="password" id="pin-troca-confirmar" placeholder="Confirma o novo PIN" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
+      <p id="pin-troca-error" class="gate-error" style="display:none;"></p>
+      <button type="submit" class="primary-btn" id="pin-troca-submit">Definir novo PIN</button>
+      <p id="pin-troca-status" class="gate-status" style="display:none;"></p>
     </form>
     <div id="diag-panel" class="diag-panel" style="display:none;">
       <div class="diag-panel-header">
@@ -466,7 +481,7 @@
       <div class="section-label">Total geral (todos juntos)</div>
       <div class="stat-grid">
         <div class="stat-card success"><div class="label">Recebido — todos juntos</div><div class="value" id="p-recebido-geral">€0,00</div></div>
-        <div class="stat-card primary"><div class="label">Recebido — só colaboradoras</div><div class="value" id="p-recebido-colab">€0,00</div></div>
+        <div class="stat-card primary stat-card-clicavel" id="stat-recebido-colab"><div class="label">Recebido — só colaboradoras <span class="stat-info-icon">ℹ️</span></div><div class="value" id="p-recebido-colab">€0,00</div></div>
       </div>
 
       <div class="section-label">Por pessoa</div>
@@ -1607,6 +1622,44 @@
     return `<div class="empty-state"><span class="emoji">${emoji}</span><p>${text}</p></div>`;
   }
 
+  /* ---------- DETALHE "Recebido — só colaboradoras" ----------
+     Abre uma caixinha (mesmo sistema de sheet já usado no resto da app)
+     com o resumo simples por colaboradora do mês atual: reaproveita os
+     mesmos cálculos já usados na secção "Por pessoa". */
+  function abrirDetalheColaboradoras(){
+    const mesAtual = chaveMesAtual();
+    const servicosDoMes = servicos.filter(f => chaveMes(f.data) === mesAtual);
+    const linhas = pessoaIds().filter(id => id !== 'eu').map(id => {
+      const lista = servicosDoMes.filter(f => (f.pessoa || 'eu') === id);
+      const rec = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
+      const pen = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
+      return `
+      <div class="colab-item">
+        <div>
+          <div class="nome">${escapeHTML(nomePessoa(id))}</div>
+          <div class="sub">${lista.length} serviço${lista.length===1?'':'s'}</div>
+        </div>
+        <div class="valores">
+          <div class="rec">${fmtMoney(rec)}</div>
+          ${pen > 0 ? `<div class="pen">${fmtMoney(pen)} pendente</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Recebido — só colaboradoras</h2>
+      <p class="confirm-text">Resumo de ${escapeHTML(nomeMes(mesAtual))}, por colaboradora.</p>
+      ${linhas || emptyState('👥','Ainda não há serviços de colaboradoras este mês.')}
+      <button class="secondary-btn" id="detalhe-colab-fechar">Fechar</button>
+    `);
+    const fechar = document.getElementById('detalhe-colab-fechar');
+    if(fechar) fechar.addEventListener('click', closeSheet);
+  }
+  const statRecebidoColab = document.getElementById('stat-recebido-colab');
+  if(statRecebidoColab){
+    statRecebidoColab.addEventListener('click', abrirDetalheColaboradoras);
+  }
+
   function servicoCardHTML(f, withActions){
     const pessoaId = f.pessoa || 'eu';
     return `
@@ -2053,6 +2106,20 @@
   }
   $('#overlay').addEventListener('click', (e) => { if(e.target.id === 'overlay') closeSheet(); });
 
+  const gateForgotBtn = document.getElementById('gate-forgot-btn');
+  if(gateForgotBtn){
+    gateForgotBtn.addEventListener('click', function(){
+      openSheet(`
+        <div class="sheet-handle"></div>
+        <h2>Esqueci o PIN</h2>
+        <p class="gate-forgot-msg">Entre em contacto com o suporte da Rota Singular para redefinir o seu PIN:<br><a href="mailto:rrotasingular@gmail.com">rrotasingular@gmail.com</a></p>
+        <button class="secondary-btn" id="gate-forgot-fechar">Fechar</button>
+      `);
+      const fechar = document.getElementById('gate-forgot-fechar');
+      if(fechar) fechar.addEventListener('click', closeSheet);
+    });
+  }
+
   $('#btn-settings').addEventListener('click', () => {
     const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || '';
     openSheet(`
@@ -2233,6 +2300,71 @@
     function mostrarEstado(msg){
       if(gateStatus){ gateStatus.textContent = msg; gateStatus.style.display = 'block'; }
       if(gateError) gateError.style.display = 'none';
+    }
+
+    /* ---------- PIN TEMPORÁRIO: troca obrigatória no primeiro acesso ----------
+       Quando profiles.pin_temporario = true (contas pré-criadas por quem
+       administra, com um PIN provisório partilhado), a pessoa tem de definir
+       um novo PIN próprio antes de conseguir entrar na aplicação. Só usa
+       client.auth.updateUser() e um update em profiles — nenhuma lógica
+       nova de autenticação. */
+    function pedirNovoPinObrigatorio(userId, label, email){
+      gateForm.style.display = 'none';
+      const pinTrocaForm = document.getElementById('pin-troca-form');
+      const pinTrocaNovo = document.getElementById('pin-troca-novo');
+      const pinTrocaConfirmar = document.getElementById('pin-troca-confirmar');
+      const pinTrocaError = document.getElementById('pin-troca-error');
+      const pinTrocaStatus = document.getElementById('pin-troca-status');
+      const pinTrocaSubmit = document.getElementById('pin-troca-submit');
+      if(!pinTrocaForm) return;
+      pinTrocaForm.style.display = 'block';
+
+      function mostrarErroTroca(msg){
+        if(pinTrocaError){ pinTrocaError.textContent = msg; pinTrocaError.style.display = 'block'; }
+        if(pinTrocaStatus) pinTrocaStatus.style.display = 'none';
+        if(pinTrocaSubmit){ pinTrocaSubmit.disabled = false; pinTrocaSubmit.textContent = 'Definir novo PIN'; }
+      }
+
+      pinTrocaForm.onsubmit = function(ev){
+        ev.preventDefault();
+        const novoPin = (pinTrocaNovo.value || '').trim();
+        const confirmarPin = (pinTrocaConfirmar.value || '').trim();
+        if(!/^\d{4}$/.test(novoPin)){
+          mostrarErroTroca('O novo PIN tem de ter exatamente 4 dígitos.');
+          return;
+        }
+        if(novoPin !== confirmarPin){
+          mostrarErroTroca('Os dois PINs não coincidem.');
+          return;
+        }
+        if(pinTrocaSubmit){ pinTrocaSubmit.disabled = true; pinTrocaSubmit.textContent = 'A guardar…'; }
+        if(pinTrocaStatus){ pinTrocaStatus.textContent = 'A definir o novo PIN…'; pinTrocaStatus.style.display = 'block'; }
+        if(pinTrocaError) pinTrocaError.style.display = 'none';
+
+        loadSupabase(function(client){
+          client.auth.updateUser({ password: 'ela-pin-' + novoPin }).then(function(updRes){
+            if(updRes.error){
+              mostrarErroTroca('Não foi possível definir o novo PIN (' + updRes.error.message + ').');
+              return;
+            }
+            client.from('profiles').update({ pin_temporario: false }).eq('id', userId).then(function(profRes){
+              if(profRes.error){
+                mostrarErroTroca('PIN atualizado, mas houve um problema a concluir (' + profRes.error.message + ').');
+                return;
+              }
+              pinTrocaForm.style.display = 'none';
+              gateForm.style.display = '';
+              iniciarApp(userId, label, email);
+            }).catch(function(e){
+              mostrarErroTroca('Erro de rede ao concluir a troca de PIN: ' + e.message);
+            });
+          }).catch(function(e){
+            mostrarErroTroca('Erro de rede ao definir o novo PIN: ' + e.message);
+          });
+        }, function(){
+          mostrarErroTroca('Sem ligação à internet. É necessária internet para definir o novo PIN.');
+        });
+      };
     }
 
     /* ---------- MODO DIAGNÓSTICO (temporário) ----------
@@ -2435,9 +2567,15 @@
                 }
                 const userId = res.data.user.id;
                 console.log('[DIAGNOSTICO] 6) Login OK, userId =', userId, '. A ler perfil (profiles.select)...');
-                client.from('profiles').select('label').eq('id', userId).single().then(function(profRes){
+                client.from('profiles').select('label, pin_temporario').eq('id', userId).single().then(function(profRes){
                   console.log('[DIAGNOSTICO] 7) Resposta de profiles.select recebida:', JSON.stringify({ data: profRes.data, error: profRes.error }));
                   const label = (profRes.data && profRes.data.label) ? profRes.data.label : utilizador;
+                  if(profRes.data && profRes.data.pin_temporario){
+                    console.log('[DIAGNOSTICO] 8) PIN ainda é temporário. A pedir novo PIN antes de continuar...');
+                    if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
+                    pedirNovoPinObrigatorio(userId, label, email);
+                    return;
+                  }
                   console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
                   iniciarApp(userId, label, email);
                   console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');

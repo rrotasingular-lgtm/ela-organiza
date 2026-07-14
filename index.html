@@ -40,7 +40,7 @@
   }
   button{font-family:inherit; cursor:pointer;}
   input, textarea, select{font-family:inherit;}
- 
+
   .app{
     max-width:560px;
     margin:0 auto;
@@ -50,7 +50,7 @@
     position:relative;
     background:var(--bg);
   }
- 
+
   /* HEADER */
   header.topbar{
     display:flex;
@@ -86,7 +86,7 @@
   }
   .brand-name .w-ela{font-weight:800; font-size:19px; color:var(--primary);}
   .brand-name .w-organiza{font-weight:500; font-style:italic; font-size:16px; color:var(--logo-dark);}
- 
+
   .hero-tag{font-size:14.5px; color:var(--text); opacity:0.8; margin:18px 0 0;}
   .hero-tag b{color:var(--secondary); font-weight:600; opacity:1;}
   .user-chip{
@@ -96,7 +96,7 @@
   }
   .user-chip::before{content:"●"; color:var(--success); font-size:8px;}
   .mes-chip{font-size:12px; font-weight:600; color:var(--muted); margin-top:8px; text-transform:capitalize;}
- 
+
   .app-footer{
     text-align:center; font-size:11.5px; line-height:1.4; color:var(--muted);
     opacity:0.75; margin:32px 0 8px; padding:0 12px; font-weight:400;
@@ -109,16 +109,16 @@
     color:var(--secondary);
   }
   .icon-btn:active{transform:scale(0.94);}
- 
+
   main{flex:1; padding:6px 20px 100px;}
- 
+
   h1.page-title{
     font-size:22px; font-weight:700; margin:8px 0 18px; letter-spacing:-0.01em;
   }
   .view{display:none; animation:fadeIn .25s ease;}
   .view.active{display:block;}
   @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);}}
- 
+
   /* CARDS */
   .card{
     background:var(--card);
@@ -143,13 +143,13 @@
   .stat-card.success .value{color:var(--success);}
   .stat-card.alert .value{color:var(--alert);}
   .stat-card.primary .value{color:var(--secondary);}
- 
+
   .section-label{
     font-size:13px; font-weight:600; color:var(--muted); text-transform:uppercase;
     letter-spacing:0.06em; margin:22px 2px 10px;
     display:flex; align-items:center; justify-content:space-between;
   }
- 
+
   .resumo-final{
     background:var(--card); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:6px 20px;
   }
@@ -161,7 +161,7 @@
   .resumo-linha strong{font-size:16px; font-weight:700;}
   .resumo-linha.destaque{padding-top:16px;}
   .resumo-linha.destaque strong{color:var(--secondary); font-size:18px;}
- 
+
   /* LIST ITEMS */
   .servico-item{
     background:var(--card);
@@ -191,13 +191,13 @@
   }
   .mini-btn.danger{color:var(--alert); background:rgba(229,122,68,0.08);}
   .mini-btn:active{transform:scale(0.97);}
- 
+
   .empty-state{
     text-align:center; padding:50px 20px; color:var(--muted);
   }
   .empty-state .emoji{font-size:38px; margin-bottom:10px; display:block;}
   .empty-state p{font-size:14px; margin:0; line-height:1.5;}
- 
+
   /* FILTERS */
   .filter-row{display:flex; gap:8px; margin-bottom:12px; overflow-x:auto; padding-bottom:2px;}
   .filter-row::-webkit-scrollbar{display:none;}
@@ -208,7 +208,7 @@
   }
   .filter-chip.active{background:var(--secondary); color:#fff; box-shadow:none;}
   .filter-row.scroll .filter-chip{flex:none;}
- 
+
   .select-field{
     width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm);
     padding:12px 14px; font-size:14px; background:#fff; color:var(--text);
@@ -216,7 +216,7 @@
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a9491' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat:no-repeat; background-position:right 12px center; background-size:16px;
   }
- 
+
   /* FORM */
   .field{margin-bottom:16px;}
   .field label{display:block; font-size:13px; font-weight:600; color:var(--secondary); margin-bottom:7px;}
@@ -234,14 +234,14 @@
   }
   .toggle-opt.selected.sim{background:rgba(58,167,109,0.1); border-color:var(--success); color:var(--success);}
   .toggle-opt.selected.nao{background:rgba(229,122,68,0.1); border-color:var(--alert); color:var(--alert);}
- 
+
   .pessoa-row{display:flex; gap:8px; flex-wrap:wrap;}
   .pessoa-opt{
     padding:10px 14px; border-radius:999px; border:1.5px solid var(--border);
     font-weight:600; font-size:13px; color:var(--muted); background:#fff;
   }
   .pessoa-opt.selected{background:var(--secondary); border-color:var(--secondary); color:#fff;}
- 
+
   .primary-btn{
     width:100%; border:none; border-radius:var(--radius-sm); padding:16px 0;
     background:var(--secondary); color:#fff; font-weight:600; font-size:15.5px;
@@ -253,7 +253,7 @@
     width:100%; border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 0;
     background:#fff; color:var(--secondary); font-weight:600; font-size:14.5px; margin-top:10px;
   }
- 
+
   /* WEEK NAV */
   .week-nav{
     display:flex; align-items:center; justify-content:space-between;
@@ -263,7 +263,7 @@
   .week-nav button{border:none; background:var(--bg); width:34px; height:34px; border-radius:50%; color:var(--secondary); font-size:16px; display:flex; align-items:center; justify-content:center;}
   .week-nav .week-label{font-weight:600; font-size:14px; text-align:center;}
   .week-nav .week-sub{font-size:11.5px; color:var(--muted); text-align:center; margin-top:1px;}
- 
+
   /* COLABORADOR BREAKDOWN */
   .colab-item{
     background:var(--card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
@@ -274,7 +274,7 @@
   .colab-item .valores{text-align:right;}
   .colab-item .valores .rec{font-weight:700; font-size:14.5px; color:var(--success);}
   .colab-item .valores .pen{font-size:11.5px; color:var(--alert); margin-top:2px;}
- 
+
   /* GASTOS */
   .gasto-item{
     background:var(--card); border-radius:var(--radius-md); box-shadow:var(--shadow-sm);
@@ -284,7 +284,7 @@
   .gasto-desc{font-weight:600; font-size:15px;}
   .gasto-data{font-size:12.5px; color:var(--muted); margin-top:2px;}
   .gasto-valor{font-weight:700; font-size:16px; color:var(--alert); white-space:nowrap;}
- 
+
   /* BOTTOM NAV */
   nav.tabbar{
     position:fixed; bottom:0; left:0; right:0;
@@ -304,7 +304,7 @@
   .tab-btn svg{width:20px; height:20px;}
   .tab-btn span{font-size:9.5px; font-weight:600;}
   .tab-btn.active{color:var(--secondary);}
- 
+
   /* MODAL */
   .overlay{
     position:fixed; inset:0; background:rgba(20,30,29,0.45);
@@ -328,7 +328,7 @@
   .btn-danger{background:var(--alert); color:#fff;}
   .sheet .field label{margin-bottom:5px;}
   .sheet .field input{padding:11px 12px; font-size:14px;}
- 
+
   .toast{
     position:fixed; bottom:96px; left:50%; transform:translateX(-50%) translateY(20px);
     background:var(--text); color:#fff; padding:12px 20px; border-radius:14px; font-size:13.5px;
@@ -336,7 +336,7 @@
     max-width:80%; text-align:center;
   }
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
- 
+
   .gate{
     position:fixed; inset:0; z-index:500; background:var(--bg);
     display:flex; align-items:center; justify-content:center; padding:24px;
@@ -376,7 +376,7 @@
     color:var(--text); font-weight:600; background:var(--card);
   }
   .gate-phone-row input{margin-bottom:0;}
- 
+
   .backup-banner{
     display:flex; align-items:center; gap:12px; background:#FFF4EC; border:1.5px solid #F3D4B8;
     border-radius:var(--radius-sm); padding:14px; margin-bottom:18px;
@@ -388,11 +388,11 @@
     background:var(--secondary); color:#fff; border:none; border-radius:10px;
     padding:9px 12px; font-size:12px; font-weight:600; white-space:nowrap;
   }
- 
+
   .help-block{background:var(--card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px;}
   .help-block h3{font-size:14px; margin:0 0 6px; color:var(--secondary);}
   .help-block p{font-size:13px; color:var(--text); line-height:1.55; margin:0;}
- 
+
   @media (min-width:600px){
     .app{box-shadow:0 0 40px rgba(0,0,0,0.04); min-height:100vh;}
   }
@@ -428,7 +428,7 @@
   </div>
 </div>
 <div class="app">
- 
+
   <header class="topbar">
     <div class="brand">
       <div class="brand-icon"><div class="brush"></div><span class="runner">🏃‍♀️</span></div>
@@ -438,16 +438,16 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09A1.65 1.65 0 0015 4.6a1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
     </button>
   </header>
- 
+
   <main>
- 
+
     <!-- PAINEL -->
     <section class="view active" id="view-painel">
       <h1 class="page-title">Meu painel</h1>
       <div class="hero-tag">Seu trabalho, <b>organizado.</b></div>
       <div class="mes-chip" id="p-mes-atual">–</div>
       <div class="user-chip" id="user-chip" style="display:none;"></div>
- 
+
       <div class="backup-banner" id="backup-banner" style="display:none;">
         <div class="backup-banner-text">
           <strong>Lembrete de backup</strong>
@@ -463,19 +463,19 @@
         <div class="stat-card alert"><div class="label">Gastos gerais</div><div class="value" id="p-gastos">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Valor líquido</div><div class="value" id="p-liquido">€0,00</div></div>
       </div>
- 
+
       <div class="section-label">Total geral (todos juntos)</div>
       <div class="stat-grid">
         <div class="stat-card success"><div class="label">Recebido — todos juntos</div><div class="value" id="p-recebido-geral">€0,00</div></div>
         <div class="stat-card primary"><div class="label">Recebido — só colaboradoras</div><div class="value" id="p-recebido-colab">€0,00</div></div>
       </div>
- 
+
       <div class="section-label">Por pessoa</div>
       <div id="p-colaboradores"></div>
- 
+
       <div class="section-label">Últimos registos</div>
       <div id="p-ultimos"></div>
- 
+
       <div class="section-label">Receita Total</div>
       <div class="resumo-final">
         <div class="resumo-linha"><span>Receita</span><strong id="p-resumo-receita">€0,00</strong></div>
@@ -483,7 +483,7 @@
         <div class="resumo-linha destaque"><span>Lucro líquido</span><strong id="p-resumo-lucro">€0,00</strong></div>
       </div>
     </section>
- 
+
     <!-- NOVO SERVIÇO -->
     <section class="view" id="view-nova">
       <h1 class="page-title">novo serviço</h1>
@@ -525,7 +525,7 @@
         </form>
       </div>
     </section>
- 
+
     <!-- HISTORICO -->
     <section class="view" id="view-historico">
       <h1 class="page-title">histórico</h1>
@@ -537,7 +537,7 @@
       </div>
       <div id="lista-historico"></div>
     </section>
- 
+
     <!-- GASTOS -->
     <section class="view" id="view-gastos">
       <h1 class="page-title">gastos gerais</h1>
@@ -565,11 +565,11 @@
       <div class="section-label">Registos de gastos</div>
       <div id="lista-gastos"></div>
     </section>
- 
+
     <!-- RELATORIO -->
     <section class="view" id="view-relatorio">
       <h1 class="page-title">relatórios</h1>
- 
+
       <div class="field">
         <label for="periodo-select">Período</label>
         <select id="periodo-select"></select>
@@ -578,7 +578,7 @@
         <label for="r-cliente-busca">Filtrar por cliente (opcional)</label>
         <input type="text" id="r-cliente-busca" placeholder="Ex: Maria Silva" autocomplete="off">
       </div>
- 
+
       <div class="stat-grid">
         <div class="stat-card primary"><div class="label">Total faturado</div><div class="value" id="r-faturado">€0,00</div></div>
         <div class="stat-card success"><div class="label">Total recebido</div><div class="value" id="r-recebido">€0,00</div></div>
@@ -593,50 +593,50 @@
       <div id="lista-relatorio-gastos"></div>
       <button class="primary-btn" id="btn-pdf" style="margin-top:18px;">Exportar PDF</button>
     </section>
- 
+
     <!-- AJUDA / MANUAL -->
     <section class="view" id="view-ajuda">
       <h1 class="page-title">manual rápido</h1>
- 
+
       <div class="help-block">
         <h3>1. A tua chave</h3>
         <p>Cada pessoa entra com a sua própria chave, no formato <strong>ela.nome</strong> (ex: ela.carla). Cada chave guarda os dados separadamente — ninguém vê os registos de outra pessoa, mesmo no mesmo telemóvel.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>2. Registar um serviço</h3>
         <p>Vai à aba <strong>Nova</strong>, preenche cliente, data, horas, valor e se já foi pago, e toca em guardar. Aparece logo no Painel e no Histórico.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>3. Gastos gerais</h3>
         <p>Na aba <strong>Gastos</strong> podes registar despesas do trabalho (materiais, transporte, etc.) que entram no cálculo do valor líquido.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>4. Relatórios</h3>
         <p>Mostra o resumo do período escolhido (mês atual, mês anterior, outro mês ou todo o histórico) e permite filtrar por cliente e exportar um PDF.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>5. Backup — muito importante</h3>
         <p>Os dados ficam guardados só neste telemóvel. Se perderes ou trocares de aparelho, os dados não vêm sozinhos. Por isso, <strong>uma vez por semana</strong>, vai a Definições → <strong>Exportar dados (backup)</strong> e guarda o ficheiro num local seguro (Ficheiros, e-mail para ti mesma, etc.). Quando aparecer o aviso laranja no Painel, é sinal de que já passou uma semana sem backup.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>6. Trocar de telemóvel</h3>
         <p>No telemóvel antigo, exporta o backup. No telemóvel novo, entra com a mesma chave e, em Definições → <strong>Importar dados de um backup</strong>, escolhe o ficheiro. O histórico completo aparece de volta.</p>
       </div>
- 
+
       <div class="help-block">
         <h3>7. Sair da conta</h3>
         <p>Se emprestares o telemóvel a outra pessoa, usa <strong>Definições → Sair da conta</strong> para sair e deixar a outra pessoa entrar com a conta dela.</p>
       </div>
     </section>
- 
+
     <footer class="app-footer">- uma solução Rota Singular -</footer>
   </main>
- 
+
   <nav class="tabbar">
     <button class="tab-btn active" data-view="painel">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
@@ -663,16 +663,16 @@
       <span>Ajuda</span>
     </button>
   </nav>
- 
+
 </div>
- 
+
 <!-- MODAL OVERLAY -->
 <div class="overlay" id="overlay">
   <div class="sheet" id="sheet-content"></div>
 </div>
- 
+
 <div class="toast" id="toast"></div>
- 
+
 <script>
 (function(){
   "use strict";
@@ -695,14 +695,14 @@
   const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
   const KEY_MIGRADO = "elaOrganizaMigrado";
- 
+
   /* ================= I18N — Passo 2.1: estrutura central =================
      Preparação da aplicação para múltiplos idiomas. Por agora só existem
      duas variantes (Português de Portugal e do Brasil), mas a estrutura
      está pensada para receber mais idiomas no futuro sem reescrever nada
      do resto do código — basta acrescentar outra chave ao objeto
      TRADUCOES e ao array IDIOMAS_SUPORTADOS.
- 
+
      Como funciona: cada texto traduzível tem uma "chave" (ex:
      "nav.gastos"), e essa chave aponta para o texto certo consoante o
      idioma ativo. Elementos HTML marcados com data-i18n="chave" (ou
@@ -758,12 +758,12 @@
       'toast.servico.apagado': 'Serviço apagado'
     }
   };
- 
+
   const I18n = (function(){
     const KEY_IDIOMA = 'elaOrganizaIdioma'; // preferência do aparelho, não do perfil
     const IDIOMAS_SUPORTADOS = ['pt-PT', 'pt-BR'];
     let atual = null;
- 
+
     function detetarIdiomaDispositivo(){
       const candidatos = (typeof navigator !== 'undefined' && navigator.languages && navigator.languages.length)
         ? navigator.languages
@@ -775,7 +775,7 @@
       }
       return 'pt-PT';
     }
- 
+
     function obterIdioma(){
       if(atual) return atual;
       let guardado = StorageAdapter.get(KEY_IDIOMA);
@@ -786,19 +786,19 @@
       atual = guardado;
       return atual;
     }
- 
+
     function definirIdioma(idioma){
       if(IDIOMAS_SUPORTADOS.indexOf(idioma) === -1) return;
       atual = idioma;
       StorageAdapter.set(KEY_IDIOMA, idioma);
       aplicar();
     }
- 
+
     function t(chave){
       const dic = TRADUCOES[obterIdioma()] || TRADUCOES['pt-PT'];
       return (dic && dic[chave]) || (TRADUCOES['pt-PT'][chave]) || chave;
     }
- 
+
     function aplicar(){
       if(typeof document === 'undefined') return;
       const elementos = document.querySelectorAll('[data-i18n]');
@@ -810,10 +810,10 @@
         campos[i].placeholder = t(campos[i].getAttribute('data-i18n-placeholder'));
       }
     }
- 
+
     return { obterIdioma, definirIdioma, t, aplicar, IDIOMAS_SUPORTADOS };
   })();
- 
+
   /* ================= STORAGE PROVIDERS =================
      Um "provider" é qualquer objeto com esta interface, de baixo nível,
      sem tratamento de erros nem fallback — isso é responsabilidade do
@@ -821,7 +821,7 @@
        get(key)         -> devolve o valor guardado, ou null/undefined
        set(key, value)  -> guarda um valor
        remove(key)      -> remove um valor
- 
+
      Hoje só existe o LocalStorageProvider. Para suportar no futuro outro
      mecanismo (IndexedDB, um backend remoto, etc.), basta escrever um
      novo objeto com esta mesma interface e indicar ao StorageAdapter
@@ -834,7 +834,7 @@
     set(key, value){ localStorage.setItem(key, value); },
     remove(key){ localStorage.removeItem(key); }
   };
- 
+
   /* ================= STORAGE ADAPTER =================
      Camada única de acesso ao armazenamento da aplicação. A partir daqui,
      nenhuma outra parte do código acede a localStorage (nem a qualquer
@@ -849,7 +849,7 @@
      Mail, origem file://, onde o Safari lança uma exceção ao aceder a
      localStorage). Sem esse fallback, essa exceção pararia a execução
      do script logo no arranque, antes de qualquer botão ser ligado.
- 
+
      Nesta etapa o único provider existente continua a ser o
      LocalStorageProvider — o comportamento da aplicação não muda. */
   const StorageAdapter = (function(provider){
@@ -870,21 +870,21 @@
     function isBlocked(){ return blocked; }
     return { get, set, remove, isBlocked };
   })(LocalStorageProvider);
- 
+
   /* ================= SUPABASE (preparação — Etapa 1) =================
      Isto é só infraestrutura, ainda sem qualquer uso: nada no resto da
      aplicação chama nada daqui. Não há autenticação, não há
      sincronização, não há alteração de comportamento — o
      StorageAdapter/LocalStorageProvider continuam a ser a única forma
      como a app lê e grava dados, exatamente como até agora.
- 
+
      Não existe conceito de ficheiro ".env" numa página HTML estática
      sem servidor nem passo de build (isto não corre por npm nem
      Next.js) — por isso a Project URL e a Publishable Key ficam
      guardadas aqui, como constantes simples, em vez de variáveis de
      ambiente. É AQUI, e só aqui, que deves colocar/atualizar esses
      valores no futuro.
- 
+
      IMPORTANTE: só a "Publishable Key" (chave pública/anon) deve
      alguma vez ir aqui. A "Service Role Key" nunca deve aparecer em
      código que corre no telemóvel/navegador da utilizadora — essa
@@ -892,9 +892,9 @@
      só pode existir num servidor de confiança, nunca aqui. */
   const SUPABASE_URL = "https://cibscdftspasmivnxeqa.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_sCzEzT9u0pyhGjCAcREggA_6yLBbe7c";
- 
+
   let supabaseClient = null;
- 
+
   /* Carrega o SDK do Supabase só quando for pedido (o mesmo padrão já
      usado para o gerador de PDF, mais abaixo neste ficheiro) — assim a
      app não faz nenhum pedido de rede extra enquanto ninguém a usar.
@@ -917,14 +917,14 @@
     };
     document.head.appendChild(s);
   }
- 
+
   /* ================= SYNC MANAGER — Etapa 4 =================
      Sincroniza servicos e gastos com o Supabase em segundo plano,
      sempre que houver internet. É só uma camada POR CIMA do
      StorageAdapter/localStorage — nunca uma substituição. A app
      continua 100% funcional offline; isto nunca bloqueia nem atrasa
      nenhuma ação da utilizadora.
- 
+
      Como funciona: cada criação/edição/eliminação local entra numa
      "fila de sincronização" guardada localmente. Sempre que há
      internet (ao criar o registo, ao ligar a internet, ou ao entrar
@@ -936,25 +936,25 @@
     let userId = null;
     let filaKey = null;
     let aProcessar = false;
- 
+
     function iniciar(uid){
       userId = uid;
       filaKey = "elaOrganizaFilaSync::" + uid;
       tentarProcessarFila();
     }
- 
+
     function parar(){
       userId = null;
       filaKey = null;
     }
- 
+
     function lerFila(){
       return JSON.parse(StorageAdapter.get(filaKey) || "[]");
     }
     function gravarFila(fila){
       StorageAdapter.set(filaKey, JSON.stringify(fila));
     }
- 
+
     function enfileirar(tabela, registo){
       if(!userId) return;
       const fila = lerFila().filter(item => item.id !== registo.id);
@@ -962,7 +962,7 @@
       gravarFila(fila);
       tentarProcessarFila();
     }
- 
+
     function enfileirarRemocao(tabela, id){
       if(!userId) return;
       const fila = lerFila().filter(item => item.id !== id);
@@ -970,7 +970,7 @@
       gravarFila(fila);
       tentarProcessarFila();
     }
- 
+
     function mapearParaSupabase(tabela, registo){
       const atualizado = new Date(registo.updatedAt || registo.createdAt || Date.now()).toISOString();
       if(tabela === 'servicos'){
@@ -986,7 +986,7 @@
         descricao: registo.descricao || '', valor: registo.valor || 0, updated_at: atualizado
       };
     }
- 
+
     function tentarProcessarFila(){
       if(!userId || aProcessar) return;
       if(typeof navigator !== 'undefined' && navigator.onLine === false) return;
@@ -997,7 +997,7 @@
         processarSequencial(client, 0, function(){ aProcessar = false; });
       }, function(){ aProcessar = false; });
     }
- 
+
     function processarSequencial(client, index, aoTerminar){
       const fila = lerFila();
       if(index >= fila.length){ aoTerminar(); return; }
@@ -1017,7 +1017,7 @@
         processarSequencial(client, 0, aoTerminar);
       }).catch(function(){ aoTerminar(); });
     }
- 
+
     function puxarDoServidor(callback){
       if(!userId) { callback(null, null); return; }
       loadSupabase(function(client){
@@ -1030,18 +1030,18 @@
         }).catch(function(){ callback(null, null); });
       }, function(){ callback(null, null); });
     }
- 
+
     return { iniciar, parar, enfileirar, enfileirarRemocao, tentarProcessarFila, puxarDoServidor };
   })();
- 
+
   if(typeof window.addEventListener === 'function'){
     window.addEventListener('online', function(){ SyncManager.tentarProcessarFila(); });
   }
- 
+
   let servicos = [];
   let gastos = [];
   let colaboradores = { eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3" };
- 
+
   /* ---------- CHAVE DE UTILIZADOR ----------
      Cada "chave" tem os seus próprios dados, guardados sob um prefixo
      próprio nas chaves de armazenamento. Isto permite que o mesmo link
@@ -1054,7 +1054,7 @@
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "") || "utilizador";
   }
- 
+
   function carregarDados(){
     servicos = JSON.parse(StorageAdapter.get(KEY) || "[]");
     gastos = JSON.parse(StorageAdapter.get(KEY_GASTOS) || "[]");
@@ -1062,7 +1062,7 @@
       eu: "Eu", colab1: "Colaborador 1", colab2: "Colaborador 2", colab3: "Colaborador 3"
     };
   }
- 
+
   function iniciarApp(userId, label){
     console.log('[DIAGNOSTICO] 3-local) Início de iniciarApp(). Antes de qualquer gravação em StorageAdapter/localStorage.', { userId: userId, label: label });
     const slug = userId;
@@ -1073,7 +1073,7 @@
     KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso::" + slug;
     if(!StorageAdapter.get(KEY_PRIMEIRO_USO)) StorageAdapter.set(KEY_PRIMEIRO_USO, new Date().toISOString());
     KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
- 
+
     // Migração única: se esta é a primeira vez que esta conta é usada neste
     // aparelho e já existiam dados antigos (do sistema local anterior, sem
     // conta), passamos esses dados para a conta atual, para não perder nada.
@@ -1086,23 +1086,23 @@
       if(legadoColab) StorageAdapter.set(KEY_COLAB, legadoColab);
       StorageAdapter.set(KEY_MIGRADO, "1");
     }
- 
+
     StorageAdapter.set(KEY_CHAVE_ATIVA, userId);
     StorageAdapter.set(KEY_CHAVE_LABEL, label);
     console.log('[DIAGNOSTICO] 4-local) Gravação em StorageAdapter concluída (KEY_CHAVE_ATIVA/KEY_CHAVE_LABEL). StorageAdapter.isBlocked() =', StorageAdapter.isBlocked());
     carregarDados();
     console.log('[DIAGNOSTICO] 5-local) carregarDados() concluído. servicos.length =', servicos.length, 'gastos.length =', gastos.length);
     SyncManager.iniciar(userId);
- 
+
     const userChip = document.getElementById('user-chip');
     if(userChip){
       userChip.textContent = label;
       userChip.style.display = 'inline-flex';
     }
- 
+
     const gate = document.getElementById('gate');
     if(gate) gate.classList.add('gate-hidden');
- 
+
     buildHistoricoPessoaSelect();
     resetForm();
     resetFormGasto();
@@ -1114,7 +1114,7 @@
       setTimeout(sincronizarNoArranque, 900);
     }
   }
- 
+
   /* Ao entrar (ou reabrir a app), tenta buscar o que existe no servidor e
      juntar com o que já está neste aparelho. Regra simples para esta
      primeira versão: para cada registo, ganha quem tiver "updatedAt"
@@ -1141,7 +1141,7 @@
       }
     });
   }
- 
+
   function mapearServicoDoServidor(linha){
     return {
       id: linha.id, pessoa: linha.pessoa || 'eu', cliente: linha.cliente || '',
@@ -1157,7 +1157,7 @@
       createdAt: new Date(linha.updated_at).getTime(), updatedAt: new Date(linha.updated_at).getTime()
     };
   }
- 
+
   function fundirRegistos(locais, remotos, mapear){
     const porId = {};
     locais.forEach(r => { porId[r.id] = r; });
@@ -1176,7 +1176,7 @@
     });
     return Object.values(porId);
   }
- 
+
   function trocarUtilizador(){
     function limparESair(){
       SyncManager.parar();
@@ -1190,21 +1190,21 @@
     // localmente — não deixa a utilizadora presa no ecrã.
     setTimeout(limparESair, 2500);
   }
- 
+
   let historicoFilter = "todas";
- 
+
   let historicoPessoa = "todos";
   let pagoSelecionado = "sim";
   let pessoaSelecionada = "eu";
- 
+
   const $ = (sel) => document.querySelector(sel);
   const $$ = (sel) => document.querySelectorAll(sel);
- 
+
   function persist(){ StorageAdapter.set(KEY, JSON.stringify(servicos)); }
   function persistGastos(){ StorageAdapter.set(KEY_GASTOS, JSON.stringify(gastos)); }
   function persistColab(){ StorageAdapter.set(KEY_COLAB, JSON.stringify(colaboradores)); }
   function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
- 
+
   const fmtMoney = (n) => new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR'}).format(n || 0);
   const fmtDate = (iso) => {
     const d = new Date(iso + 'T00:00:00');
@@ -1212,7 +1212,7 @@
   };
   const fmtDateShort = (d) => d.toLocaleDateString('pt-PT', {day:'2-digit', month:'short'});
   const nomePessoa = (id) => colaboradores[id] || id;
- 
+
   /* Converte texto livre de horas (ex: "3h30", "2,5h", "45min", "1h15") para
      um número decimal, apenas para efeitos de somas/estatísticas. O texto
      original escrito pelo utilizador é sempre guardado e mostrado tal como
@@ -1230,7 +1230,7 @@
     if((m = t.match(/^(\d+(\.\d+)?)$/))) return parseFloat(m[1]);
     return 0;
   }
- 
+
   /* ---------- GESTÃO POR MÊS ----------
      Os dados não são fisicamente separados por mês no armazenamento — cada
      registo já guarda a sua data (campo "data"), e calculamos o mês a que
@@ -1263,7 +1263,7 @@
     gastos.forEach(g => { if(g.data) set.add(chaveMes(g.data)); });
     return [...set].sort().reverse();
   }
- 
+
   function toast(msg){
     const t = $('#toast');
     t.textContent = msg;
@@ -1271,7 +1271,7 @@
     clearTimeout(t._timer);
     t._timer = setTimeout(()=> t.classList.remove('show'), 2200);
   }
- 
+
   /* ---------- NAVIGATION ---------- */
   function switchView(view){
     $$('.view').forEach(v => v.classList.remove('active'));
@@ -1286,10 +1286,10 @@
   $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
   const backupBannerBtn = document.getElementById('backup-banner-btn');
   if(backupBannerBtn) backupBannerBtn.addEventListener('click', exportarDados);
- 
+
   /* ---------- PESSOA SELECTORS (rendered dynamically so renamed labels show) ---------- */
   function pessoaIds(){ return ['eu','colab1','colab2','colab3']; }
- 
+
   function buildFormPessoaRow(){
     const cont = $('#f-pessoa-row');
     cont.innerHTML = pessoaIds().map(id =>
@@ -1303,7 +1303,7 @@
       });
     });
   }
- 
+
   function buildHistoricoPessoaSelect(){
     const sel = $('#hist-pessoa');
     sel.innerHTML = `<option value="todos">Todos os registos</option>` +
@@ -1314,7 +1314,7 @@
     historicoPessoa = e.target.value;
     renderHistorico();
   });
- 
+
   /* ---------- FORM: NOVO / EDITAR SERVIÇO ---------- */
   const form = $('#form-servico');
   $$('.toggle-opt').forEach(btn => {
@@ -1324,7 +1324,7 @@
       btn.classList.add('selected');
     });
   });
- 
+
   function resetForm(){
     form.reset();
     $('#f-id').value = '';
@@ -1336,7 +1336,7 @@
     buildFormPessoaRow();
     $('#btn-guardar').textContent = 'Guardar serviço';
   }
- 
+
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = $('#f-id').value;
@@ -1364,7 +1364,7 @@
     resetForm();
     switchView('historico');
   });
- 
+
   function editarServico(id){
     const f = servicos.find(x => x.id === id);
     if(!f) return;
@@ -1382,7 +1382,7 @@
     $('#btn-guardar').textContent = 'Atualizar serviço';
     switchView('nova');
   }
- 
+
   /* ---------- PAINEL ---------- */
   function atualizarBannerBackup(){
     const banner = document.getElementById('backup-banner');
@@ -1392,20 +1392,20 @@
     const dias = (Date.now() - new Date(referencia).getTime()) / 86400000;
     banner.style.display = (dias >= 7 && servicos.length > 0) ? 'flex' : 'none';
   }
- 
+
   function verificarLembreteBackupModal(){
     if(servicos.length === 0) return;
     const referencia = StorageAdapter.get(KEY_BACKUP) || StorageAdapter.get(KEY_PRIMEIRO_USO);
     if(!referencia) return;
     const diasBackup = (Date.now() - new Date(referencia).getTime()) / 86400000;
     if(diasBackup < 7) return;
- 
+
     const adiado = StorageAdapter.get(KEY_LEMBRETE_ADIADO);
     if(adiado){
       const diasAdiado = (Date.now() - new Date(adiado).getTime()) / 86400000;
       if(diasAdiado < 7) return;
     }
- 
+
     openSheet(`
       <div class="sheet-handle"></div>
       <h2>Lembrete de backup</h2>
@@ -1424,16 +1424,16 @@
       exportarDados();
     });
   }
- 
+
   function renderPainel(){
     atualizarBannerBackup();
     const mesAtual = chaveMesAtual();
     const servicosDoMes = servicos.filter(f => chaveMes(f.data) === mesAtual);
     const gastosDoMes = gastos.filter(g => chaveMes(g.data) === mesAtual);
- 
+
     const rotuloMes = $('#p-mes-atual');
     if(rotuloMes) rotuloMes.textContent = nomeMes(mesAtual);
- 
+
     const minhas = servicosDoMes.filter(f => (f.pessoa || 'eu') === 'eu');
     const recebido = minhas.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const pendente = minhas.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
@@ -1445,16 +1445,16 @@
     $('#p-quantidade').textContent = minhas.length;
     $('#p-gastos').textContent = fmtMoney(totalGastos);
     $('#p-liquido').textContent = fmtMoney(recebido - totalGastos);
- 
+
     const recebidoGeral = servicosDoMes.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const recebidoColab = servicosDoMes.filter(f=>f.pago && (f.pessoa || 'eu') !== 'eu').reduce((s,f)=>s+f.valor,0);
     $('#p-recebido-geral').textContent = fmtMoney(recebidoGeral);
     $('#p-recebido-colab').textContent = fmtMoney(recebidoColab);
- 
+
     $('#p-resumo-receita').textContent = fmtMoney(recebidoGeral);
     $('#p-resumo-gastos').textContent = fmtMoney(totalGastos);
     $('#p-resumo-lucro').textContent = fmtMoney(recebidoGeral - totalGastos);
- 
+
     const contColab = $('#p-colaboradores');
     contColab.innerHTML = pessoaIds().map(id => {
       const lista = servicosDoMes.filter(f => (f.pessoa || 'eu') === id);
@@ -1472,7 +1472,7 @@
         </div>
       </div>`;
     }).join('');
- 
+
     const ultimos = [...servicosDoMes].sort((a,b)=> b.createdAt - a.createdAt).slice(0,5);
     const cont = $('#p-ultimos');
     if(ultimos.length === 0){
@@ -1481,11 +1481,11 @@
     }
     cont.innerHTML = ultimos.map(f => servicoCardHTML(f, false)).join('');
   }
- 
+
   function emptyState(emoji, text){
     return `<div class="empty-state"><span class="emoji">${emoji}</span><p>${text}</p></div>`;
   }
- 
+
   function servicoCardHTML(f, withActions){
     const pessoaId = f.pessoa || 'eu';
     return `
@@ -1509,13 +1509,13 @@
       </div>` : ''}
     </div>`;
   }
- 
+
   function escapeHTML(str){
     const d = document.createElement('div');
     d.textContent = str || '';
     return d.innerHTML;
   }
- 
+
   /* ---------- HISTORICO ---------- */
   $$('.filter-chip').forEach(chip => {
     chip.addEventListener('click', () => {
@@ -1525,7 +1525,7 @@
       renderHistorico();
     });
   });
- 
+
   function renderHistorico(){
     let lista = [...servicos].sort((a,b)=> new Date(b.data) - new Date(a.data));
     if(historicoFilter === 'recebidas') lista = lista.filter(f=>f.pago);
@@ -1538,10 +1538,10 @@
     }
     cont.innerHTML = lista.map(f => servicoCardHTML(f, true)).join('');
   }
- 
+
   window.__editar = editarServico;
   window.__apagar = (id) => confirmarApagar(id);
- 
+
   function confirmarApagar(id){
     openSheet(`
       <div class="sheet-handle"></div>
@@ -1563,17 +1563,17 @@
       toast('Serviço apagado');
     });
   }
- 
+
   /* ---------- GASTOS GERAIS ---------- */
   const formGasto = $('#form-gasto');
- 
+
   function resetFormGasto(){
     formGasto.reset();
     $('#g-id').value = '';
     $('#g-data').value = new Date().toISOString().slice(0,10);
     $('#btn-guardar-gasto').textContent = 'Guardar gasto';
   }
- 
+
   formGasto.addEventListener('submit', (e) => {
     e.preventDefault();
     const id = $('#g-id').value;
@@ -1597,7 +1597,7 @@
     resetFormGasto();
     renderGastos();
   });
- 
+
   function gastoCardHTML(g){
     return `
     <div class="gasto-item">
@@ -1614,7 +1614,7 @@
       </div>
     </div>`;
   }
- 
+
   function renderGastos(){
     const total = gastos.reduce((s,g)=>s+g.valor,0);
     $('#g-total').textContent = fmtMoney(total);
@@ -1624,7 +1624,7 @@
       ? emptyState('🧾','Ainda não há gastos registados.')
       : lista.map(gastoCardHTML).join('');
   }
- 
+
   window.__editarGasto = (id) => {
     const g = gastos.find(x => x.id === id);
     if(!g) return;
@@ -1636,7 +1636,7 @@
     switchView('gastos');
     window.scrollTo({top: $('#form-gasto').offsetTop - 80, behavior:'smooth'});
   };
- 
+
   window.__apagarGasto = (id) => {
     openSheet(`
       <div class="sheet-handle"></div>
@@ -1658,7 +1658,7 @@
       toast('Gasto apagado');
     });
   };
- 
+
   /* ---------- RELATÓRIOS ---------- */
   function popularSeletorPeriodo(){
     const sel = $('#periodo-select');
@@ -1680,7 +1680,7 @@
     sel.innerHTML = opcoes;
     if(valorAtual && [...sel.options].some(o => o.value === valorAtual)) sel.value = valorAtual;
   }
- 
+
   function periodoFiltro(servicosArr, gastosArr){
     const modo = $('#periodo-select').value || 'atual';
     let chaveAlvo = null;
@@ -1689,10 +1689,10 @@
     else if(modo === 'anterior'){ chaveAlvo = chaveMesAnterior(); rotulo = nomeMes(chaveAlvo); }
     else if(modo === 'tudo'){ rotulo = 'Todo o histórico'; }
     else { chaveAlvo = modo; rotulo = nomeMes(modo); }
- 
+
     let lista = chaveAlvo ? servicosArr.filter(f => chaveMes(f.data) === chaveAlvo) : servicosArr.slice();
     let listaGastos = chaveAlvo ? gastosArr.filter(g => chaveMes(g.data) === chaveAlvo) : gastosArr.slice();
- 
+
     const termo = ($('#r-cliente-busca').value || '').trim().toLowerCase();
     if(termo){
       lista = lista.filter(f => (f.cliente || '').toLowerCase().includes(termo));
@@ -1700,19 +1700,19 @@
     }
     return { lista, listaGastos, rotulo, termo };
   }
- 
+
   function renderRelatorio(){
     popularSeletorPeriodo();
     const { lista: listaBruta, listaGastos: listaGastosBruta, rotulo } = periodoFiltro(servicos, gastos);
     const lista = listaBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
     const listaGastos = listaGastosBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
- 
+
     const faturado = lista.reduce((s,f)=>s+f.valor,0);
     const recebido = lista.filter(f=>f.pago).reduce((s,f)=>s+f.valor,0);
     const pendente = lista.filter(f=>!f.pago).reduce((s,f)=>s+f.valor,0);
     const horas = lista.reduce((s,f)=>s+parseHoras(f.horas),0);
     const totalGastosPeriodo = listaGastos.reduce((s,g)=>s+g.valor,0);
- 
+
     $('#r-faturado').textContent = fmtMoney(faturado);
     $('#r-recebido').textContent = fmtMoney(recebido);
     $('#r-pendente').textContent = fmtMoney(pendente);
@@ -1721,21 +1721,21 @@
     $('#r-liquido').textContent = fmtMoney(recebido - totalGastosPeriodo);
     $('#r-qtd').textContent = lista.length;
     $('#r-qtd-gastos').textContent = listaGastos.length;
- 
+
     $('#lista-relatorio').innerHTML = lista.length === 0
       ? emptyState('📅','Sem serviços registados neste período.')
       : lista.map(f => servicoCardHTML(f, false)).join('');
- 
+
     $('#lista-relatorio-gastos').innerHTML = listaGastos.length === 0
       ? emptyState('🧾','Sem despesas registadas neste período.')
       : listaGastos.map(gastoCardHTML).join('');
- 
+
     window.__relatorioData = { rotulo, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosPeriodo };
   }
- 
+
   $('#periodo-select').addEventListener('change', renderRelatorio);
   $('#r-cliente-busca').addEventListener('input', renderRelatorio);
- 
+
   /* ---------- PDF EXPORT ---------- */
   function loadJsPDF(cb){
     if(window.jspdf){ cb(); return; }
@@ -1745,19 +1745,19 @@
     s.onerror = () => toast('Não foi possível carregar o gerador de PDF. Verifique a ligação à internet.');
     document.head.appendChild(s);
   }
- 
+
   $('#btn-pdf').addEventListener('click', () => {
     loadJsPDF(gerarPDF);
   });
- 
+
   function gerarPDF(){
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ unit: 'mm', format: 'a4' });
     const { rotulo, lista, listaGastos, faturado, recebido, pendente, horas, totalGastosPeriodo } = window.__relatorioData;
- 
+
     const marginX = 16;
     let y = 20;
- 
+
     doc.setFillColor(47, 109, 115);
     doc.roundedRect(marginX, y - 10, 22, 22, 4, 4, 'F');
     doc.setTextColor(255,255,255);
@@ -1767,7 +1767,7 @@
     doc.setFontSize(6.5);
     doc.setFont('helvetica','normal');
     doc.text('organiza', marginX + 11, y + 4, {align:'center'});
- 
+
     doc.setTextColor(34,34,34);
     doc.setFont('helvetica','bold');
     doc.setFontSize(16);
@@ -1776,18 +1776,18 @@
     doc.setFontSize(10);
     doc.setTextColor(120,120,120);
     doc.text('Relatório de serviços', marginX + 28, y + 3);
- 
+
     y += 20;
     doc.setDrawColor(230,230,230);
     doc.line(marginX, y, 210 - marginX, y);
     y += 10;
- 
+
     doc.setTextColor(47,109,115);
     doc.setFont('helvetica','bold');
     doc.setFontSize(12);
     doc.text(`Período: ${rotulo}`, marginX, y);
     y += 10;
- 
+
     const totals = [
       ['Total faturado', fmtMoney(faturado)],
       ['Total recebido', fmtMoney(recebido)],
@@ -1808,17 +1808,17 @@
       doc.text(row[1], 210 - marginX, rowY, {align:'right'});
     });
     y += totals.length*7 + 8;
- 
+
     doc.setDrawColor(230,230,230);
     doc.line(marginX, y, 210 - marginX, y);
     y += 8;
- 
+
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(47,109,115);
     doc.text('Serviços do período', marginX, y);
     y += 7;
- 
+
     doc.setFontSize(9);
     doc.setFont('helvetica','bold');
     doc.setTextColor(120,120,120);
@@ -1832,7 +1832,7 @@
     doc.setDrawColor(230,230,230);
     doc.line(marginX, y, 210 - marginX, y);
     y += 6;
- 
+
     if(lista.length === 0){
       doc.setFont('helvetica','normal');
       doc.setTextColor(150,150,150);
@@ -1854,19 +1854,19 @@
         y += 7;
       });
     }
- 
+
     y += 6;
     if(y > 265){ doc.addPage(); y = 20; }
     doc.setDrawColor(230,230,230);
     doc.line(marginX, y, 210 - marginX, y);
     y += 8;
- 
+
     doc.setFont('helvetica','bold');
     doc.setFontSize(11);
     doc.setTextColor(47,109,115);
     doc.text('Gastos gerais do período', marginX, y);
     y += 7;
- 
+
     if(listaGastos.length === 0){
       doc.setFont('helvetica','normal');
       doc.setFontSize(9);
@@ -1895,15 +1895,15 @@
         y += 7;
       });
     }
- 
+
     doc.setFontSize(8);
     doc.setTextColor(170,170,170);
     doc.text('Gerado por ela organiza · ' + new Date().toLocaleDateString('pt-PT'), marginX, 290);
- 
+
     const fileName = `relatorio-ela-organiza-${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(fileName);
   }
- 
+
   /* ---------- SETTINGS / COLABORADORES / LIMPAR DADOS ---------- */
   function openSheet(html){
     $('#sheet-content').innerHTML = html;
@@ -1913,7 +1913,7 @@
     $('#overlay').classList.remove('show');
   }
   $('#overlay').addEventListener('click', (e) => { if(e.target.id === 'overlay') closeSheet(); });
- 
+
   $('#btn-settings').addEventListener('click', () => {
     const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || '';
     openSheet(`
@@ -1951,7 +1951,7 @@
       toast('Nomes atualizados');
     });
   });
- 
+
   async function exportarDados(){
     const chaveAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || 'utilizador';
     const pacote = {
@@ -1967,7 +1967,7 @@
     const nomeFicheiro = `ela-organiza-backup-${slugify(chaveAtual)}-${dataStr}.json`;
     const conteudo = JSON.stringify(pacote, null, 2);
     const blob = new Blob([conteudo], {type: 'application/json'});
- 
+
     // Tenta primeiro a folha de partilha nativa do telemóvel (permite enviar
     // por Mail, WhatsApp, guardar em Ficheiros, etc.) — um site não consegue
     // abrir o Mail com um anexo já pronto para um endereço fixo, mas a
@@ -1988,7 +1988,7 @@
       if(e && e.name === 'AbortError') return; // utilizador cancelou a partilha, não faz nada
       // qualquer outro erro cai para a descarga normal abaixo
     }
- 
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -2001,7 +2001,7 @@
     atualizarBannerBackup();
     toast('Backup exportado. Guarda o ficheiro para usares noutro aparelho.');
   }
- 
+
   function importarDados(ev){
     const file = ev.target.files && ev.target.files[0];
     if(!file) return;
@@ -2057,7 +2057,7 @@
       toast('Todos os dados foram apagados');
     });
   }
- 
+
   /* ---------- INIT ---------- */
   const contaGuardada = StorageAdapter.get(KEY_CHAVE_ATIVA);
   const labelGuardado = StorageAdapter.get(KEY_CHAVE_LABEL);
@@ -2073,7 +2073,7 @@
     const gateError = document.getElementById('gate-error');
     const gateStatus = document.getElementById('gate-status');
     const gateSubmit = document.getElementById('gate-submit');
- 
+
     if(gateUtilizador){
       gateUtilizador.addEventListener('input', function(){
         let v = this.value.toLowerCase();
@@ -2082,7 +2082,7 @@
         this.value = v;
       });
     }
- 
+
     function mostrarErro(msg){
       if(gateError){ gateError.textContent = msg; gateError.style.display = 'block'; }
       if(gateStatus) gateStatus.style.display = 'none';
@@ -2092,7 +2092,7 @@
       if(gateStatus){ gateStatus.textContent = msg; gateStatus.style.display = 'block'; }
       if(gateError) gateError.style.display = 'none';
     }
- 
+
     /* ---------- MODO DIAGNÓSTICO (temporário) ----------
        Mostra na própria interface, sem precisar de nenhuma ferramenta
        externa, exatamente onde e porquê o login/criação de conta falhou.
@@ -2124,7 +2124,7 @@
         document.getElementById('diag-panel').style.display = 'none';
       });
     }
- 
+
     if(gateForm){
       gateForm.addEventListener('submit', function(ev){
         ev.preventDefault();
@@ -2132,7 +2132,7 @@
         const sufixoUtilizador = (gateUtilizador.value || '').trim();
         const utilizador = sufixoUtilizador ? ('ela.' + sufixoUtilizador) : '';
         const pin = (gatePin.value || '').trim();
- 
+
         if(telefoneDigitos.length < 6){
           mostrarErro('Introduz um número de telemóvel válido.');
           gateTelefone.focus();
@@ -2148,7 +2148,7 @@
           gatePin.focus();
           return;
         }
- 
+
         const telefoneCompleto = '+351' + telefoneDigitos;
         // Usamos o domínio do próprio projeto Supabase para o e-mail sintético
         // (em vez de um domínio inventado, tipo "elaorganiza.app", que não
@@ -2158,10 +2158,10 @@
         const dominioSupabase = SUPABASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
         const emailSintetico = slugify(utilizador) + '.utilizador@' + dominioSupabase;
         const senhaComposta = telefoneCompleto + ':' + pin;
- 
+
         if(gateSubmit){ gateSubmit.disabled = true; gateSubmit.textContent = 'A entrar…'; }
         mostrarEstado('Um momento…');
- 
+
         console.log('[DIAGNOSTICO] 1) A carregar o SDK do Supabase (antes de qualquer chamada)...');
         loadSupabase(function(client){
           console.log('[DIAGNOSTICO] 2) SDK carregado, cliente criado. A chamar rpc("username_existe")...', { p_label: utilizador });
@@ -2193,7 +2193,22 @@
                   return;
                 }
                 const userId = res.data.user.id;
-                console.log('[DIAGNOSTICO] 6) Conta criada, userId =', userId, '. A gravar perfil (profiles.insert)...');
+                console.log('[DIAGNOSTICO] 6) Conta criada, userId =', userId, '. A verificar sessao antes de gravar perfil...');
+
+                if(!res.data.session){
+                  console.log('[DIAGNOSTICO] 6b) Conta criada mas SEM sessao (session=null). profiles.insert() NAO sera executado para evitar violacao de RLS.');
+                  mostrarDiagnostico({
+                    etapa: '6b) Sessao ausente apos signUp', funcao: 'client.auth.signUp()', rpc: '-',
+                    codigoHttp: '-', mensagem: 'res.data.session veio null — sem JWT autenticado, o insert em profiles violaria a RLS (auth.uid() = id).',
+                    stack: '-',
+                    respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
+                  });
+                  mostrarErro('A conta foi criada, mas é necessário concluir a autenticação antes de continuar (sessão não iniciada). Por favor tente entrar novamente.');
+                  if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
+                  return;
+                }
+
+                console.log('[DIAGNOSTICO] 6c) Sessao autenticada confirmada. A gravar perfil (profiles.insert)...');
                 client.from('profiles').insert({ id: userId, label: utilizador, telefone: telefoneCompleto }).then(function(insertRes){
                   console.log('[DIAGNOSTICO] 7) Resposta de profiles.insert recebida:', JSON.stringify({ data: insertRes.data, error: insertRes.error }));
                   if(insertRes.error){

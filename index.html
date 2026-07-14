@@ -2310,41 +2310,68 @@
                 const userId = res.data.user.id;
                 console.log('[DIAGNOSTICO] 6) Conta criada, userId =', userId, '. A verificar sessao antes de gravar perfil...');
 
-                if(!res.data.session){
-                  console.log('[DIAGNOSTICO] 6b) Conta criada mas SEM sessao (session=null). profiles.insert() NAO sera executado para evitar violacao de RLS.');
-                  mostrarDiagnostico({
-                    etapa: '6b) Sessao ausente apos signUp', funcao: 'client.auth.signUp()', rpc: '-',
-                    codigoHttp: '-', mensagem: 'res.data.session veio null — sem JWT autenticado, o insert em profiles violaria a RLS (auth.uid() = id).',
-                    stack: '-',
-                    respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
+                function gravarPerfilEIniciar(){
+                  console.log('[DIAGNOSTICO] 6c) Sessao autenticada confirmada. A gravar perfil (profiles.insert)...');
+                  client.from('profiles').insert({ id: userId, label: utilizador }).then(function(insertRes){
+                    console.log('[DIAGNOSTICO] 7) Resposta de profiles.insert recebida:', JSON.stringify({ data: insertRes.data, error: insertRes.error }));
+                    if(insertRes.error){
+                      mostrarDiagnostico({
+                        etapa: '7) Resposta de profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
+                        codigoHttp: insertRes.status, mensagem: insertRes.error.message, stack: insertRes.error.stack,
+                        respostaCompleta: JSON.stringify({ data: insertRes.data, error: insertRes.error }, null, 2)
+                      });
+                      mostrarErro('Conta criada, mas houve um problema a guardar o perfil (' + insertRes.error.message + ').');
+                      return;
+                    }
+                    console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
+                    iniciarApp(userId, utilizador, email);
+                    console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
+                  }).catch(function(e){
+                    console.log('[DIAGNOSTICO] ERRO em profiles.insert (rejeicao/exception):', e && e.message, e);
+                    mostrarDiagnostico({
+                      etapa: '7) Exceção em profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
+                      codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
+                    });
+                    mostrarErro('Erro de rede a guardar o perfil: ' + e.message);
                   });
-                  mostrarErro('A conta foi criada, mas é necessário concluir a autenticação antes de continuar (sessão não iniciada). Por favor tente entrar novamente.');
-                  if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
+                }
+
+                if(res.data.session){
+                  // Fluxo nativo normal: signUp já devolveu sessão autenticada.
+                  gravarPerfilEIniciar();
                   return;
                 }
 
-                console.log('[DIAGNOSTICO] 6c) Sessao autenticada confirmada. A gravar perfil (profiles.insert)...');
-                client.from('profiles').insert({ id: userId, label: utilizador }).then(function(insertRes){
-                  console.log('[DIAGNOSTICO] 7) Resposta de profiles.insert recebida:', JSON.stringify({ data: insertRes.data, error: insertRes.error }));
-                  if(insertRes.error){
+                // O Supabase pode devolver session=null em signUp (ex: se a
+                // confirmação de e-mail estiver ativa no projeto). Sem sessão
+                // não há JWT, e a RLS de profiles (auth.uid() = id) bloqueia
+                // corretamente o insert. A forma nativa de obter essa sessão
+                // é autenticar de imediato com as mesmas credenciais — é o
+                // mesmo signInWithPassword já usado no login normal.
+                console.log('[DIAGNOSTICO] 6b) Conta criada mas SEM sessao (session=null). A autenticar automaticamente com signInWithPassword()...');
+                mostrarEstado('A concluir autenticação…');
+                client.auth.signInWithPassword({ email: email, password: senhaComposta }).then(function(loginRes){
+                  console.log('[DIAGNOSTICO] 6c) Resposta de signInWithPassword (pós-signUp) recebida:', JSON.stringify({ data: loginRes.data, error: loginRes.error }));
+                  if(loginRes.error || !loginRes.data || !loginRes.data.session){
                     mostrarDiagnostico({
-                      etapa: '7) Resposta de profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
-                      codigoHttp: insertRes.status, mensagem: insertRes.error.message, stack: insertRes.error.stack,
-                      respostaCompleta: JSON.stringify({ data: insertRes.data, error: insertRes.error }, null, 2)
+                      etapa: '6c) Resposta de auth.signInWithPassword (pós-signUp)', funcao: 'client.auth.signInWithPassword()', rpc: '-',
+                      codigoHttp: loginRes.error ? loginRes.error.status : '-', mensagem: loginRes.error ? loginRes.error.message : 'sem sessão devolvida',
+                      stack: loginRes.error ? loginRes.error.stack : '-',
+                      respostaCompleta: JSON.stringify({ data: loginRes.data, error: loginRes.error }, null, 2)
                     });
-                    mostrarErro('Conta criada, mas houve um problema a guardar o perfil (' + insertRes.error.message + ').');
+                    mostrarErro('A conta foi criada, mas é necessário concluir a autenticação antes de continuar. Por favor tente entrar novamente.');
+                    if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
                     return;
                   }
-                  console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
-                  iniciarApp(userId, utilizador, email);
-                  console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
+                  gravarPerfilEIniciar();
                 }).catch(function(e){
-                  console.log('[DIAGNOSTICO] ERRO em profiles.insert (rejeicao/exception):', e && e.message, e);
+                  console.log('[DIAGNOSTICO] ERRO em auth.signInWithPassword pós-signUp (rejeicao/exception):', e && e.message, e);
                   mostrarDiagnostico({
-                    etapa: '7) Exceção em profiles.insert', funcao: "client.from('profiles').insert()", rpc: '-',
+                    etapa: '6c) Exceção em auth.signInWithPassword (pós-signUp)', funcao: 'client.auth.signInWithPassword()', rpc: '-',
                     codigoHttp: '-', mensagem: e && e.message, stack: e && e.stack, respostaCompleta: '-'
                   });
-                  mostrarErro('Erro de rede a guardar o perfil: ' + e.message);
+                  mostrarErro('Erro de rede ao concluir a autenticação: ' + e.message);
+                  if(gateSubmit){ gateSubmit.disabled = false; gateSubmit.textContent = 'Entrar'; }
                 });
               }).catch(function(e){
                 console.log('[DIAGNOSTICO] ERRO em auth.signUp (rejeicao/exception):', e && e.message, e);

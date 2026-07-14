@@ -402,15 +402,12 @@
 <div class="gate" id="gate">
   <div class="gate-card">
     <div class="gate-brand"><span class="w-ela">ela.</span><span class="w-organiza">organiza</span></div>
-    <p class="gate-sub">Entra com o teu telemóvel, utilizador e PIN. Se ainda não tens conta, é criada automaticamente.</p>
+    <p class="gate-sub">Entra com o teu e-mail, utilizador e PIN. Se ainda não tens conta, é criada automaticamente.</p>
     <form id="gate-form">
-      <div class="gate-phone-row">
-        <span class="gate-phone-prefix">+351</span>
-        <input type="tel" id="gate-telefone" placeholder="912 345 678" inputmode="numeric" autocomplete="off" maxlength="15">
-      </div>
+      <input type="email" id="gate-email" placeholder="e-mail" inputmode="email" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
       <div class="gate-phone-row">
         <span class="gate-phone-prefix">ela.</span>
-        <input type="text" id="gate-utilizador" placeholder="carlaassis" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+        <input type="text" id="gate-utilizador" placeholder="utilizador" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
       </div>
       <input type="password" id="gate-pin" placeholder="PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off">
       <p id="gate-error" class="gate-error" style="display:none;"></p>
@@ -694,6 +691,7 @@
   let KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado";
   const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
+  const KEY_CHAVE_EMAIL = "elaOrganizaChaveEmail";
   const KEY_MIGRADO = "elaOrganizaMigrado";
 
   /* ================= I18N — Passo 2.1: estrutura central =================
@@ -710,9 +708,9 @@
      automaticamente por I18n.aplicar(). */
   const TRADUCOES = {
     'pt-PT': {
-      'gate.subtitulo': 'Entra com o teu telemóvel, utilizador e PIN. Se ainda não tens conta, é criada automaticamente.',
-      'gate.telefone.placeholder': '912 345 678',
-      'gate.utilizador.placeholder': 'carlaassis',
+      'gate.subtitulo': 'Entra com o teu e-mail, utilizador e PIN. Se ainda não tens conta, é criada automaticamente.',
+      'gate.email.placeholder': 'e-mail',
+      'gate.utilizador.placeholder': 'utilizador',
       'gate.pin.placeholder': 'PIN (4 dígitos)',
       'gate.entrar': 'Entrar',
       'gate.aentrar': 'A entrar…',
@@ -734,9 +732,9 @@
       'toast.servico.apagado': 'Serviço apagado'
     },
     'pt-BR': {
-      'gate.subtitulo': 'Entre com seu celular, usuário e PIN. Se ainda não tiver conta, ela é criada automaticamente.',
-      'gate.telefone.placeholder': '91234-5678',
-      'gate.utilizador.placeholder': 'carlaassis',
+      'gate.subtitulo': 'Entre com seu e-mail, usuário e PIN. Se ainda não tiver conta, ela é criada automaticamente.',
+      'gate.email.placeholder': 'e-mail',
+      'gate.utilizador.placeholder': 'usuário',
       'gate.pin.placeholder': 'PIN (4 dígitos)',
       'gate.entrar': 'Entrar',
       'gate.aentrar': 'Entrando…',
@@ -1063,7 +1061,7 @@
     };
   }
 
-  function iniciarApp(userId, label){
+  function iniciarApp(userId, label, email){
     console.log('[DIAGNOSTICO] 3-local) Início de iniciarApp(). Antes de qualquer gravação em StorageAdapter/localStorage.', { userId: userId, label: label });
     const slug = userId;
     KEY = "elaOrganizaFaxinas::" + slug;
@@ -1089,6 +1087,7 @@
 
     StorageAdapter.set(KEY_CHAVE_ATIVA, userId);
     StorageAdapter.set(KEY_CHAVE_LABEL, label);
+    if(email) StorageAdapter.set(KEY_CHAVE_EMAIL, email);
     console.log('[DIAGNOSTICO] 4-local) Gravação em StorageAdapter concluída (KEY_CHAVE_ATIVA/KEY_CHAVE_LABEL). StorageAdapter.isBlocked() =', StorageAdapter.isBlocked());
     carregarDados();
     console.log('[DIAGNOSTICO] 5-local) carregarDados() concluído. servicos.length =', servicos.length, 'gastos.length =', gastos.length);
@@ -1189,6 +1188,121 @@
     // Se o Supabase não carregar (ex: sem internet), ainda assim sai
     // localmente — não deixa a utilizadora presa no ecrã.
     setTimeout(limparESair, 2500);
+  }
+
+  /* ---------- MINHA CONTA (alterar e-mail / utilizador / PIN) ----------
+     Usa diretamente o Supabase Auth nativo: client.auth.updateUser() para
+     e-mail e PIN (password), e um update em profiles.label para o
+     utilizador. Não introduz nenhuma lógica nova de autenticação — apenas
+     expõe, na interface, a alteração dos mesmos três campos usados no
+     login. */
+  function abrirMinhaConta(){
+    const emailAtual = StorageAdapter.get(KEY_CHAVE_EMAIL) || '';
+    const labelAtual = StorageAdapter.get(KEY_CHAVE_LABEL) || '';
+    const sufixoAtual = labelAtual.replace(/^ela\.+/, '');
+    openSheet(`
+      <div class="sheet-handle"></div>
+      <h2>Minha Conta</h2>
+      <p class="confirm-text">Atualiza o teu e-mail, utilizador ou PIN. Deixa o PIN em branco para o manter igual.</p>
+      <div class="field"><label for="mc-email">E-mail</label><input type="email" id="mc-email" value="${escapeHTML(emailAtual)}" autocapitalize="none" autocorrect="off" spellcheck="false"></div>
+      <div class="gate-phone-row">
+        <span class="gate-phone-prefix">ela.</span>
+        <input type="text" id="mc-utilizador" value="${escapeHTML(sufixoAtual)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false">
+      </div>
+      <div class="field"><label for="mc-pin">Novo PIN (4 dígitos, opcional)</label><input type="password" id="mc-pin" placeholder="PIN (4 dígitos)" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off"></div>
+      <p id="mc-error" class="gate-error" style="display:none;"></p>
+      <button class="primary-btn" id="mc-guardar">Guardar alterações</button>
+      <button class="secondary-btn" id="mc-fechar">Fechar</button>
+    `);
+    const mcUtilizador = document.getElementById('mc-utilizador');
+    if(mcUtilizador){
+      mcUtilizador.addEventListener('input', function(){
+        let v = this.value.toLowerCase();
+        v = v.replace(/^ela\.+/, '');
+        v = v.replace(/[^a-z0-9.]/g, '');
+        this.value = v;
+      });
+    }
+    $('#mc-fechar').addEventListener('click', closeSheet);
+    $('#mc-guardar').addEventListener('click', function(){
+      const mcErro = document.getElementById('mc-error');
+      function mostrarErroConta(msg){
+        if(mcErro){ mcErro.textContent = msg; mcErro.style.display = 'block'; }
+      }
+      const novoEmail = (document.getElementById('mc-email').value || '').trim().toLowerCase();
+      const novoSufixo = (document.getElementById('mc-utilizador').value || '').trim();
+      const novoUtilizador = novoSufixo ? ('ela.' + novoSufixo) : '';
+      const novoPin = (document.getElementById('mc-pin').value || '').trim();
+
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(novoEmail)){
+        mostrarErroConta('Introduz um e-mail válido.');
+        return;
+      }
+      if(!novoUtilizador){
+        mostrarErroConta('Introduz um nome de utilizador.');
+        return;
+      }
+      if(novoPin && !/^\d{4}$/.test(novoPin)){
+        mostrarErroConta('O PIN tem de ter exatamente 4 dígitos.');
+        return;
+      }
+
+      const userId = StorageAdapter.get(KEY_CHAVE_ATIVA);
+      const btn = document.getElementById('mc-guardar');
+      if(btn){ btn.disabled = true; btn.textContent = 'A guardar…'; }
+
+      loadSupabase(function(client){
+        const updates = {};
+        if(novoEmail && novoEmail !== emailAtual) updates.email = novoEmail;
+        if(novoPin) updates.password = 'ela-pin-' + novoPin;
+
+        function atualizarPerfilEFinalizar(){
+          if(novoUtilizador === labelAtual){
+            finalizar();
+            return;
+          }
+          client.from('profiles').update({ label: novoUtilizador }).eq('id', userId).then(function(res){
+            if(res.error){
+              mostrarErroConta('Não foi possível atualizar o utilizador (' + res.error.message + ').');
+              if(btn){ btn.disabled = false; btn.textContent = 'Guardar alterações'; }
+              return;
+            }
+            finalizar();
+          }).catch(function(e){
+            mostrarErroConta('Erro de rede ao atualizar o utilizador: ' + e.message);
+            if(btn){ btn.disabled = false; btn.textContent = 'Guardar alterações'; }
+          });
+        }
+
+        function finalizar(){
+          StorageAdapter.set(KEY_CHAVE_LABEL, novoUtilizador);
+          StorageAdapter.set(KEY_CHAVE_EMAIL, novoEmail);
+          const userChip = document.getElementById('user-chip');
+          if(userChip) userChip.textContent = novoUtilizador;
+          closeSheet();
+          toast('Dados da conta atualizados.');
+        }
+
+        if(Object.keys(updates).length > 0){
+          client.auth.updateUser(updates).then(function(res){
+            if(res.error){
+              mostrarErroConta('Não foi possível atualizar a conta (' + res.error.message + ').');
+              if(btn){ btn.disabled = false; btn.textContent = 'Guardar alterações'; }
+              return;
+            }
+            atualizarPerfilEFinalizar();
+          }).catch(function(e){
+            mostrarErroConta('Erro de rede ao atualizar a conta: ' + e.message);
+            if(btn){ btn.disabled = false; btn.textContent = 'Guardar alterações'; }
+          });
+        } else {
+          atualizarPerfilEFinalizar();
+        }
+      }, function(){
+        mostrarErroConta('Sem ligação à internet. É necessária internet para atualizar a conta.');
+        if(btn){ btn.disabled = false; btn.textContent = 'Guardar alterações'; }
+      });
+    });
   }
 
   let historicoFilter = "todas";
@@ -1927,6 +2041,7 @@
       <button class="secondary-btn" id="sheet-exportar">Exportar dados (backup)</button>
       <button class="secondary-btn" id="sheet-importar">Importar dados de um backup</button>
       <input type="file" id="sheet-importar-file" accept="application/json,.json" style="display:none;">
+      <button class="secondary-btn" id="sheet-minha-conta">Minha Conta</button>
       <button class="secondary-btn" id="sheet-trocar-chave">Sair da conta</button>
       <div class="section-label" style="margin-top:24px;">Gerir Dados</div>
       <p class="confirm-text" style="margin-top:0;">Esta opção apaga apenas os dados do perfil em uso (<strong>${escapeHTML(chaveAtual || 'este perfil')}</strong>). Os restantes perfis não são afetados.</p>
@@ -1935,6 +2050,7 @@
     `);
     $('#sheet-fechar').addEventListener('click', closeSheet);
     $('#sheet-limpar').addEventListener('click', confirmarLimparTudo);
+    $('#sheet-minha-conta').addEventListener('click', abrirMinhaConta);
     $('#sheet-trocar-chave').addEventListener('click', trocarUtilizador);
     $('#sheet-exportar').addEventListener('click', exportarDados);
     $('#sheet-importar').addEventListener('click', () => $('#sheet-importar-file').click());
@@ -2061,13 +2177,14 @@
   /* ---------- INIT ---------- */
   const contaGuardada = StorageAdapter.get(KEY_CHAVE_ATIVA);
   const labelGuardado = StorageAdapter.get(KEY_CHAVE_LABEL);
+  const emailGuardado = StorageAdapter.get(KEY_CHAVE_EMAIL);
   if(contaGuardada && labelGuardado){
     // Sessão já iniciada neste aparelho anteriormente — entra direto,
     // sem pedir novo login, mesmo sem internet (Local First).
-    iniciarApp(contaGuardada, labelGuardado);
+    iniciarApp(contaGuardada, labelGuardado, emailGuardado);
   } else {
     const gateForm = document.getElementById('gate-form');
-    const gateTelefone = document.getElementById('gate-telefone');
+    const gateEmail = document.getElementById('gate-email');
     const gateUtilizador = document.getElementById('gate-utilizador');
     const gatePin = document.getElementById('gate-pin');
     const gateError = document.getElementById('gate-error');
@@ -2128,14 +2245,14 @@
     if(gateForm){
       gateForm.addEventListener('submit', function(ev){
         ev.preventDefault();
-        const telefoneDigitos = (gateTelefone.value || '').replace(/\D/g, '');
+        const email = (gateEmail.value || '').trim().toLowerCase();
         const sufixoUtilizador = (gateUtilizador.value || '').trim();
         const utilizador = sufixoUtilizador ? ('ela.' + sufixoUtilizador) : '';
         const pin = (gatePin.value || '').trim();
 
-        if(telefoneDigitos.length < 6){
-          mostrarErro('Introduz um número de telemóvel válido.');
-          gateTelefone.focus();
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+          mostrarErro('Introduz um e-mail válido.');
+          gateEmail.focus();
           return;
         }
         if(!utilizador){
@@ -2149,15 +2266,13 @@
           return;
         }
 
-        const telefoneCompleto = '+351' + telefoneDigitos;
-        // Usamos o domínio do próprio projeto Supabase para o e-mail sintético
-        // (em vez de um domínio inventado, tipo "elaorganiza.app", que não
-        // existe de verdade). O Supabase valida o formato do e-mail e recusa
-        // domínios que não pareçam reais — o domínio do próprio Supabase tem
-        // sempre DNS válido, por isso nunca é recusado por este motivo.
-        const dominioSupabase = SUPABASE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        const emailSintetico = slugify(utilizador) + '.utilizador@' + dominioSupabase;
-        const senhaComposta = telefoneCompleto + ':' + pin;
+        // O e-mail informado pela utilizadora é usado diretamente no
+        // Supabase Auth (nativo), sem qualquer e-mail interno/sintético.
+        // O PIN de 4 dígitos é usado como password — o Supabase exige um
+        // mínimo de 6 caracteres, por isso é composto com um prefixo fixo
+        // que preserva a simplicidade do PIN para a utilizadora sem expor
+        // essa composição na interface.
+        const senhaComposta = 'ela-pin-' + pin;
 
         if(gateSubmit){ gateSubmit.disabled = true; gateSubmit.textContent = 'A entrar…'; }
         mostrarEstado('Um momento…');
@@ -2179,8 +2294,8 @@
             const existe = resp.data;
             if(!existe){
               // Cria conta nova
-              console.log('[DIAGNOSTICO] 4) Utilizador nao existe. A chamar auth.signUp()...', { email: emailSintetico });
-              client.auth.signUp({ email: emailSintetico, password: senhaComposta }).then(function(res){
+              console.log('[DIAGNOSTICO] 4) Utilizador nao existe. A chamar auth.signUp()...', { email: email });
+              client.auth.signUp({ email: email, password: senhaComposta }).then(function(res){
                 console.log('[DIAGNOSTICO] 5) Resposta de signUp recebida:', JSON.stringify({ data: res.data, error: res.error }));
                 if(res.error || !res.data || !res.data.user){
                   mostrarDiagnostico({
@@ -2209,7 +2324,7 @@
                 }
 
                 console.log('[DIAGNOSTICO] 6c) Sessao autenticada confirmada. A gravar perfil (profiles.insert)...');
-                client.from('profiles').insert({ id: userId, label: utilizador, telefone: telefoneCompleto }).then(function(insertRes){
+                client.from('profiles').insert({ id: userId, label: utilizador }).then(function(insertRes){
                   console.log('[DIAGNOSTICO] 7) Resposta de profiles.insert recebida:', JSON.stringify({ data: insertRes.data, error: insertRes.error }));
                   if(insertRes.error){
                     mostrarDiagnostico({
@@ -2221,7 +2336,7 @@
                     return;
                   }
                   console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
-                  iniciarApp(userId, utilizador);
+                  iniciarApp(userId, utilizador, email);
                   console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
                 }).catch(function(e){
                   console.log('[DIAGNOSTICO] ERRO em profiles.insert (rejeicao/exception):', e && e.message, e);
@@ -2240,9 +2355,9 @@
                 mostrarErro('Erro de rede ao criar conta: ' + e.message);
               });
             } else {
-              // Conta já existe — valida telemóvel + PIN
-              console.log('[DIAGNOSTICO] 4) Utilizador já existe. A chamar auth.signInWithPassword()...', { email: emailSintetico });
-              client.auth.signInWithPassword({ email: emailSintetico, password: senhaComposta }).then(function(res){
+              // Conta já existe — valida e-mail + PIN
+              console.log('[DIAGNOSTICO] 4) Utilizador já existe. A chamar auth.signInWithPassword()...', { email: email });
+              client.auth.signInWithPassword({ email: email, password: senhaComposta }).then(function(res){
                 console.log('[DIAGNOSTICO] 5) Resposta de signInWithPassword recebida:', JSON.stringify({ data: res.data, error: res.error }));
                 if(res.error || !res.data || !res.data.user){
                   mostrarDiagnostico({
@@ -2251,7 +2366,7 @@
                     stack: res.error ? res.error.stack : '-',
                     respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
                   });
-                  mostrarErro('Telemóvel, utilizador ou PIN incorretos.');
+                  mostrarErro('E-mail, utilizador ou PIN incorretos.');
                   return;
                 }
                 const userId = res.data.user.id;
@@ -2260,7 +2375,7 @@
                   console.log('[DIAGNOSTICO] 7) Resposta de profiles.select recebida:', JSON.stringify({ data: profRes.data, error: profRes.error }));
                   const label = (profRes.data && profRes.data.label) ? profRes.data.label : utilizador;
                   console.log('[DIAGNOSTICO] 8) Antes de iniciarApp() / gravação no armazenamento local...');
-                  iniciarApp(userId, label);
+                  iniciarApp(userId, label, email);
                   console.log('[DIAGNOSTICO] 9) Depois de iniciarApp() — se este log não aparecer, o erro está dentro de iniciarApp/carregarDados/StorageAdapter.');
                 }).catch(function(e){
                   console.log('[DIAGNOSTICO] ERRO em profiles.select (rejeicao/exception):', e && e.message, e);

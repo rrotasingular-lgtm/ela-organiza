@@ -44,11 +44,13 @@
   .app{
     max-width:560px;
     margin:0 auto;
-    min-height:100vh;
+    height:100vh;
+    height:100dvh;
     display:flex;
     flex-direction:column;
     position:relative;
     background:var(--bg);
+    overflow:hidden;
   }
 
   /* HEADER */
@@ -110,7 +112,7 @@
   }
   .icon-btn:active{transform:scale(0.94);}
 
-  main{flex:1; padding:6px 20px 100px;}
+  main{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 20px 24px;}
 
   h1.page-title{
     font-size:22px; font-weight:700; margin:8px 0 18px; letter-spacing:-0.01em;
@@ -287,13 +289,13 @@
 
   /* BOTTOM NAV */
   nav.tabbar{
-    position:fixed; bottom:0; left:0; right:0;
+    flex-shrink:0;
     background:rgba(255,255,255,0.92);
     backdrop-filter:blur(14px);
     -webkit-backdrop-filter:blur(14px);
     border-top:1px solid var(--border);
     display:flex;
-    max-width:560px; margin:0 auto;
+    width:100%;
     padding:8px 4px calc(8px + env(safe-area-inset-bottom));
     z-index:30;
   }
@@ -394,7 +396,7 @@
   .help-block p{font-size:13px; color:var(--text); line-height:1.55; margin:0;}
 
   @media (min-width:600px){
-    .app{box-shadow:0 0 40px rgba(0,0,0,0.04); min-height:100vh;}
+    .app{box-shadow:0 0 40px rgba(0,0,0,0.04);}
   }
 </style>
 </head>
@@ -570,6 +572,10 @@
       <div class="field">
         <label for="periodo-select">Período</label>
         <select id="periodo-select"></select>
+      </div>
+      <div class="field">
+        <label for="r-pessoa">Colaborador</label>
+        <select id="r-pessoa"></select>
       </div>
       <div class="field">
         <label for="r-cliente-busca">Filtrar por cliente (opcional)</label>
@@ -1395,7 +1401,8 @@
     if(view === 'historico') renderHistorico();
     if(view === 'gastos') renderGastos();
     if(view === 'relatorio') renderRelatorio();
-    window.scrollTo(0,0);
+    const mainEl = document.querySelector('main');
+    if(mainEl) mainEl.scrollTop = 0;
   }
   $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.view)));
   const backupBannerBtn = document.getElementById('backup-banner-btn');
@@ -1748,7 +1755,8 @@
     $('#g-valor').value = g.valor;
     $('#btn-guardar-gasto').textContent = 'Atualizar gasto';
     switchView('gastos');
-    window.scrollTo({top: $('#form-gasto').offsetTop - 80, behavior:'smooth'});
+    const formGasto = document.getElementById('form-gasto');
+    if(formGasto) formGasto.scrollIntoView({behavior:'smooth', block:'start'});
   };
 
   window.__apagarGasto = (id) => {
@@ -1807,6 +1815,12 @@
     let lista = chaveAlvo ? servicosArr.filter(f => chaveMes(f.data) === chaveAlvo) : servicosArr.slice();
     let listaGastos = chaveAlvo ? gastosArr.filter(g => chaveMes(g.data) === chaveAlvo) : gastosArr.slice();
 
+    const pessoaFiltro = $('#r-pessoa') ? ($('#r-pessoa').value || 'todos') : 'todos';
+    if(pessoaFiltro !== 'todos'){
+      lista = lista.filter(f => (f.pessoa || 'eu') === pessoaFiltro);
+      rotulo += ` · Colaborador: ${nomePessoa(pessoaFiltro)}`;
+    }
+
     const termo = ($('#r-cliente-busca').value || '').trim().toLowerCase();
     if(termo){
       lista = lista.filter(f => (f.cliente || '').toLowerCase().includes(termo));
@@ -1815,8 +1829,19 @@
     return { lista, listaGastos, rotulo, termo };
   }
 
+  function buildRelatorioPessoaSelect(){
+    const sel = $('#r-pessoa');
+    if(!sel) return;
+    const valorAtual = sel.value || 'todos';
+    sel.innerHTML = `<option value="todos">Todos os colaboradores</option>` +
+      pessoaIds().map(id => `<option value="${id}">${escapeHTML(nomePessoa(id))}</option>`).join('');
+    sel.value = valorAtual;
+  }
+  $('#r-pessoa').addEventListener('change', renderRelatorio);
+
   function renderRelatorio(){
     popularSeletorPeriodo();
+    buildRelatorioPessoaSelect();
     const { lista: listaBruta, listaGastos: listaGastosBruta, rotulo } = periodoFiltro(servicos, gastos);
     const lista = listaBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
     const listaGastos = listaGastosBruta.slice().sort((a,b)=> new Date(a.data) - new Date(b.data));
@@ -2304,7 +2329,19 @@
                     stack: res.error ? res.error.stack : '-',
                     respostaCompleta: JSON.stringify({ data: res.data, error: res.error }, null, 2)
                   });
-                  mostrarErro('Não foi possível criar a conta' + (res.error ? ' (' + res.error.message + ').' : '.'));
+                  if(res.error && (res.error.status === 429 || res.error.code === 'over_email_send_rate_limit')){
+                    // Este erro vem do limite de envio de e-mails do próprio
+                    // Supabase (não é um erro de PIN/utilizador). Acontece
+                    // porque o projeto tem "Confirm email" ativo, e cada
+                    // tentativa de criar conta envia um e-mail de
+                    // confirmação — o envio, não a criação da conta, é que
+                    // está limitado. Não há nada a corrigir no PIN/e-mail
+                    // introduzidos; é preciso aguardar ou ajustar as
+                    // definições de Auth do projeto Supabase.
+                    mostrarErro('Foram feitas demasiadas tentativas de criar conta em pouco tempo. Aguarda alguns minutos e tenta novamente.');
+                  } else {
+                    mostrarErro('Não foi possível criar a conta' + (res.error ? ' (' + res.error.message + ').' : '.'));
+                  }
                   return;
                 }
                 const userId = res.data.user.id;

@@ -104,7 +104,7 @@
     opacity:0.75; margin:32px 0 8px; padding:0 12px; font-weight:400;
     background:none; border:none; box-shadow:none;
   }
-  .app-footer .footer-logo{display:block; max-width:220px; width:70%; height:auto; margin:10px auto 0; opacity:1;}
+  .app-footer .footer-logo{display:block; max-width:220px; width:70%; height:auto; margin:10px auto 0; opacity:1; mix-blend-mode:multiply;}
   .icon-btn{
     width:38px;height:38px;border-radius:50%;
     border:none; background:var(--card); box-shadow:var(--shadow-sm);
@@ -722,6 +722,7 @@
   let KEY_PRIMEIRO_USO = "elaOrganizaPrimeiroUso";
   let KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado";
   let KEY_PAGAMENTO = "elaOrganizaDadosPagamento";
+  let KEY_PERFIL_META = "elaOrganizaPerfilMeta";
   const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
   const KEY_CHAVE_EMAIL = "elaOrganizaChaveEmail";
@@ -1443,6 +1444,28 @@
       tentarProcessarFila();
     }
 
+    /* As definições de perfil (colaboradores + dadosPagamento) não são uma
+       lista de registos como servicos/gastos — são um único "registo" por
+       utilizadora, guardado na mesma tabela profiles já usada para o login
+       (client.from('profiles')...). Por isso usa-se sempre o próprio userId
+       como id do item na fila (só pode haver um pendente de cada vez) e
+       'perfil' como nome lógico da tabela — mapearParaSupabase() e
+       tabelaSupabase() é que sabem que isso corresponde à tabela real
+       'profiles'. Reutiliza a mesma fila, o mesmo enfileirar/tentar
+       processar e o mesmo mecanismo de retentativa dos outros dados. */
+    function enfileirarPerfil(dadosPerfil){
+      if(!userId) return;
+      const fila = lerFila().filter(item => item.tabela !== 'perfil');
+      fila.push({ tabela: 'perfil', operacao: 'upsert', id: userId, payload: dadosPerfil, tentativas: 0 });
+      gravarFila(fila);
+      tentarProcessarFila();
+    }
+
+    // Nome da tabela real no Supabase para cada "tabela" lógica usada na fila.
+    function tabelaSupabase(tabela){
+      return tabela === 'perfil' ? 'profiles' : tabela;
+    }
+
     function mapearParaSupabase(tabela, registo){
       const atualizado = new Date(registo.updatedAt || registo.createdAt || Date.now()).toISOString();
       if(tabela === 'servicos'){
@@ -1451,6 +1474,13 @@
           cliente: registo.cliente || '', data: registo.data, horas: registo.horas || null,
           valor: registo.valor || 0, observacoes: registo.observacoes || null,
           pago: !!registo.pago, updated_at: atualizado
+        };
+      }
+      if(tabela === 'perfil'){
+        return {
+          id: userId, colaboradores: registo.colaboradores || null,
+          dados_pagamento: registo.dadosPagamento || null,
+          perfil_atualizado_em: atualizado
         };
       }
       return {
@@ -1476,10 +1506,14 @@
       const item = fila[index];
       let pedido;
       try{
+        const nomeTabela = tabelaSupabase(item.tabela);
         if(item.operacao === 'delete'){
-          pedido = client.from(item.tabela).delete().eq('id', item.id).eq('user_id', userId);
+          pedido = client.from(nomeTabela).delete().eq('id', item.id).eq('user_id', userId);
+        } else if(item.tabela === 'perfil'){
+          // profiles usa 'id' como chave (é o próprio userId), sem coluna user_id.
+          pedido = client.from(nomeTabela).update(mapearParaSupabase(item.tabela, item.payload)).eq('id', userId);
         } else {
-          pedido = client.from(item.tabela).upsert(mapearParaSupabase(item.tabela, item.payload));
+          pedido = client.from(nomeTabela).upsert(mapearParaSupabase(item.tabela, item.payload));
         }
       }catch(e){ aoTerminar(); return; } // nunca deixa um erro de sync afetar o resto da app
       pedido.then(function(res){
@@ -1491,16 +1525,17 @@
     }
 
     function puxarDoServidor(callback){
-      if(!userId) { callback(null, null); return; }
+      if(!userId) { callback(null, null, null); return; }
       loadSupabase(function(client){
         Promise.all([
           client.from('servicos').select('*').eq('user_id', userId).is('deleted_at', null),
-          client.from('gastos').select('*').eq('user_id', userId).is('deleted_at', null)
+          client.from('gastos').select('*').eq('user_id', userId).is('deleted_at', null),
+          client.from('profiles').select('colaboradores, dados_pagamento, perfil_atualizado_em').eq('id', userId).maybeSingle()
         ]).then(function(resultados){
-          const rs = resultados[0] || {}; const rg = resultados[1] || {};
-          callback(rs.data || null, rg.data || null);
-        }).catch(function(){ callback(null, null); });
-      }, function(){ callback(null, null); });
+          const rs = resultados[0] || {}; const rg = resultados[1] || {}; const rp = resultados[2] || {};
+          callback(rs.data || null, rg.data || null, rp.data || null);
+        }).catch(function(){ callback(null, null, null); });
+      }, function(){ callback(null, null, null); });
     }
 
     function estaSincronizado(){
@@ -1509,7 +1544,7 @@
       return lerFila().length === 0;
     }
 
-    return { iniciar, parar, enfileirar, enfileirarRemocao, tentarProcessarFila, puxarDoServidor, estaSincronizado };
+    return { iniciar, parar, enfileirar, enfileirarRemocao, enfileirarPerfil, tentarProcessarFila, puxarDoServidor, estaSincronizado };
   })();
 
   if(typeof window.addEventListener === 'function'){
@@ -1536,6 +1571,12 @@
   let gastos = [];
   let colaboradores = { eu: I18n.t('colaboradores.padrao.eu'), colab1: I18n.t('colaboradores.padrao.colab1'), colab2: I18n.t('colaboradores.padrao.colab2'), colab3: I18n.t('colaboradores.padrao.colab3') };
   let dadosPagamento = "";
+  // Carimbo de quando colaboradores/dadosPagamento mudaram localmente pela
+  // última vez. Usado para decidir, ao sincronizar, se o que está no
+  // Supabase é mais recente do que o que está neste aparelho (a mesma
+  // lógica de "quem tem updatedAt mais recente ganha" usada em
+  // fundirRegistos(), aplicada aqui às definições de perfil).
+  let perfilMeta = { updatedAt: 0 };
 
   /* ---------- CHAVE DE UTILIZADOR ----------
      Cada "chave" tem os seus próprios dados, guardados sob um prefixo
@@ -1557,6 +1598,7 @@
       eu: I18n.t('colaboradores.padrao.eu'), colab1: I18n.t('colaboradores.padrao.colab1'), colab2: I18n.t('colaboradores.padrao.colab2'), colab3: I18n.t('colaboradores.padrao.colab3')
     };
     dadosPagamento = StorageAdapter.get(KEY_PAGAMENTO) || "";
+    perfilMeta = JSON.parse(StorageAdapter.get(KEY_PERFIL_META) || "null") || { updatedAt: 0 };
   }
 
   function iniciarApp(userId, label, email){
@@ -1569,6 +1611,7 @@
     if(!StorageAdapter.get(KEY_PRIMEIRO_USO)) StorageAdapter.set(KEY_PRIMEIRO_USO, new Date().toISOString());
     KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
     KEY_PAGAMENTO = "elaOrganizaDadosPagamento::" + slug;
+    KEY_PERFIL_META = "elaOrganizaPerfilMeta::" + slug;
 
     // Migração única: se esta é a primeira vez que esta conta é usada neste
     // aparelho e já existiam dados antigos (do sistema local anterior, sem
@@ -1618,7 +1661,7 @@
      segundo plano, depois da tela já estar visível com os dados locais,
      para nunca atrasar a abertura da app. */
   function sincronizarNoArranque(){
-    SyncManager.puxarDoServidor(function(servicosRemotos, gastosRemotos){
+    SyncManager.puxarDoServidor(function(servicosRemotos, gastosRemotos, perfilRemoto){
       let mudou = false;
       if(servicosRemotos){
         servicos = fundirRegistos(servicos, servicosRemotos, mapearServicoDoServidor);
@@ -1628,6 +1671,10 @@
         gastos = fundirRegistos(gastos, gastosRemotos, mapearGastoDoServidor);
         mudou = true;
       }
+      let mudouPerfil = false;
+      if(perfilRemoto){
+        mudouPerfil = fundirPerfil(perfilRemoto);
+      }
       if(mudou){
         persist();
         persistGastos();
@@ -1635,7 +1682,61 @@
         if(document.getElementById('view-historico').classList.contains('active')) renderHistorico();
         if(document.getElementById('view-gastos').classList.contains('active')) renderGastos();
       }
+      if(mudouPerfil){
+        buildFormPessoaRow();
+        buildHistoricoPessoaSelect();
+        renderPainel();
+      }
     });
+  }
+
+  /* Funde as definições de perfil vindas do Supabase (colaboradores +
+     dadosPagamento) com o que já está guardado neste aparelho, usando a
+     MESMA regra de fundirRegistos(): quem tiver o carimbo mais recente
+     ganha, e nunca se apaga nada às cegas. Como colaboradores e
+     dadosPagamento viajam juntos num único "registo" de perfil (a linha
+     da utilizadora em profiles), a comparação usa um único
+     perfil_atualizado_em/perfilMeta.updatedAt para os dois campos.
+
+     Regra extra pedida (nunca sobrescrever com os valores por omissão):
+     mesmo quando o lado remoto é mais recente, só se aplica um campo se
+     ele trouxer um valor válido (não vazio); campos remotos vazios não
+     apagam o que já está localmente sincronizado, e os nomes por omissão
+     (Colaborador 1, etc.) só entram quando não há valor nenhum, nem local
+     nem remoto. */
+  function fundirPerfil(perfilRemoto){
+    const remotoAtualizado = perfilRemoto.perfil_atualizado_em ? new Date(perfilRemoto.perfil_atualizado_em).getTime() : 0;
+    const localAtualizado = perfilMeta.updatedAt || 0;
+    if(!remotoAtualizado || remotoAtualizado <= localAtualizado) return false; // local é igual ou mais recente: mantém o local
+
+    let mudouAlgo = false;
+
+    if(perfilRemoto.colaboradores && typeof perfilRemoto.colaboradores === 'object'){
+      const remCol = perfilRemoto.colaboradores;
+      const temValorValido = ['eu', 'colab1', 'colab2', 'colab3'].some(k => (remCol[k] || '').toString().trim());
+      if(temValorValido){
+        colaboradores = {
+          eu: (remCol.eu || '').toString().trim() || I18n.t('colaboradores.padrao.eu'),
+          colab1: (remCol.colab1 || '').toString().trim() || I18n.t('colaboradores.padrao.colab1'),
+          colab2: (remCol.colab2 || '').toString().trim() || I18n.t('colaboradores.padrao.colab2'),
+          colab3: (remCol.colab3 || '').toString().trim() || I18n.t('colaboradores.padrao.colab3')
+        };
+        StorageAdapter.set(KEY_COLAB, JSON.stringify(colaboradores));
+        mudouAlgo = true;
+      }
+    }
+
+    if(typeof perfilRemoto.dados_pagamento === 'string' && perfilRemoto.dados_pagamento.trim()){
+      dadosPagamento = perfilRemoto.dados_pagamento;
+      StorageAdapter.set(KEY_PAGAMENTO, dadosPagamento);
+      mudouAlgo = true;
+    }
+
+    if(mudouAlgo){
+      perfilMeta = { updatedAt: remotoAtualizado };
+      StorageAdapter.set(KEY_PERFIL_META, JSON.stringify(perfilMeta));
+    }
+    return mudouAlgo;
   }
 
   function mapearServicoDoServidor(linha){
@@ -1836,8 +1937,18 @@
 
   function persist(){ StorageAdapter.set(KEY, JSON.stringify(servicos)); }
   function persistGastos(){ StorageAdapter.set(KEY_GASTOS, JSON.stringify(gastos)); }
-  function persistColab(){ StorageAdapter.set(KEY_COLAB, JSON.stringify(colaboradores)); }
-  function persistDadosPagamento(){ StorageAdapter.set(KEY_PAGAMENTO, dadosPagamento); }
+  function persistColab(){ StorageAdapter.set(KEY_COLAB, JSON.stringify(colaboradores)); persistirPerfilMetaEEnfileirar(); }
+  function persistDadosPagamento(){ StorageAdapter.set(KEY_PAGAMENTO, dadosPagamento); persistirPerfilMetaEEnfileirar(); }
+
+  /* Chamada por persistColab()/persistDadosPagamento(): grava um novo
+     carimbo temporal local e envia colaboradores + dadosPagamento para a
+     fila de sincronização (SyncManager.enfileirarPerfil), exatamente como
+     já acontece para servicos/gastos com SyncManager.enfileirar(). */
+  function persistirPerfilMetaEEnfileirar(){
+    perfilMeta = { updatedAt: Date.now() };
+    StorageAdapter.set(KEY_PERFIL_META, JSON.stringify(perfilMeta));
+    SyncManager.enfileirarPerfil({ colaboradores: colaboradores, dadosPagamento: dadosPagamento, updatedAt: perfilMeta.updatedAt });
+  }
   function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-' + Date.now() + '-' + Math.random().toString(16).slice(2)); }
 
   const fmtMoney = (n) => new Intl.NumberFormat('pt-PT', {style:'currency', currency:'EUR'}).format(n || 0);

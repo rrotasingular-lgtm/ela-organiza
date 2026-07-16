@@ -723,6 +723,8 @@
   let KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado";
   let KEY_PAGAMENTO = "elaOrganizaDadosPagamento";
   let KEY_PERFIL_META = "elaOrganizaPerfilMeta";
+  let KEY_SERVICOS_SERVIDOR = "elaOrganizaServicosServidor";
+  let KEY_GASTOS_SERVIDOR = "elaOrganizaGastosServidor";
   const KEY_CHAVE_ATIVA = "elaOrganizaChaveAtiva";
   const KEY_CHAVE_LABEL = "elaOrganizaChaveLabel";
   const KEY_CHAVE_EMAIL = "elaOrganizaChaveEmail";
@@ -1553,7 +1555,15 @@
       return lerFila().length === 0;
     }
 
-    return { iniciar, parar, enfileirar, enfileirarRemocao, enfileirarPerfil, tentarProcessarFila, puxarDoServidor, estaSincronizado };
+    // Ids que ainda estão na fila de saída para uma tabela (ainda não
+    // confirmados no servidor). Usado por fundirRegistos() para nunca apagar
+    // localmente um registo que foi criado neste aparelho mas ainda não
+    // chegou a ser enviado ao Supabase.
+    function idsPendentes(tabela){
+      return new Set(lerFila().filter(item => item.tabela === tabela).map(item => item.id));
+    }
+
+    return { iniciar, parar, enfileirar, enfileirarRemocao, enfileirarPerfil, idsPendentes, tentarProcessarFila, puxarDoServidor, estaSincronizado };
   })();
 
   if(typeof window.addEventListener === 'function'){
@@ -1586,6 +1596,13 @@
   // lógica de "quem tem updatedAt mais recente ganha" usada em
   // fundirRegistos(), aplicada aqui às definições de perfil).
   let perfilMeta = { updatedAt: 0 };
+  // Ids de servicos/gastos que este aparelho já viu confirmados no
+  // Supabase (numa sincronização anterior). Usado por fundirRegistos()
+  // para distinguir "este registo desapareceu do servidor porque foi
+  // apagado noutro aparelho" (remove-se também aqui) de "este registo
+  // ainda nem chegou a ser enviado ao servidor" (nunca se remove).
+  let idsServicosServidor = new Set();
+  let idsGastosServidor = new Set();
 
   /* ---------- CHAVE DE UTILIZADOR ----------
      Cada "chave" tem os seus próprios dados, guardados sob um prefixo
@@ -1608,6 +1625,8 @@
     };
     dadosPagamento = StorageAdapter.get(KEY_PAGAMENTO) || "";
     perfilMeta = JSON.parse(StorageAdapter.get(KEY_PERFIL_META) || "null") || { updatedAt: 0 };
+    idsServicosServidor = new Set(JSON.parse(StorageAdapter.get(KEY_SERVICOS_SERVIDOR) || "[]"));
+    idsGastosServidor = new Set(JSON.parse(StorageAdapter.get(KEY_GASTOS_SERVIDOR) || "[]"));
   }
 
   function iniciarApp(userId, label, email){
@@ -1621,6 +1640,8 @@
     KEY_LEMBRETE_ADIADO = "elaOrganizaLembreteAdiado::" + slug;
     KEY_PAGAMENTO = "elaOrganizaDadosPagamento::" + slug;
     KEY_PERFIL_META = "elaOrganizaPerfilMeta::" + slug;
+    KEY_SERVICOS_SERVIDOR = "elaOrganizaServicosServidor::" + slug;
+    KEY_GASTOS_SERVIDOR = "elaOrganizaGastosServidor::" + slug;
 
     // Migração única: se esta é a primeira vez que esta conta é usada neste
     // aparelho e já existiam dados antigos (do sistema local anterior, sem
@@ -1673,11 +1694,13 @@
     SyncManager.puxarDoServidor(function(servicosRemotos, gastosRemotos, perfilRemoto){
       let mudou = false;
       if(servicosRemotos){
-        servicos = fundirRegistos(servicos, servicosRemotos, mapearServicoDoServidor);
+        servicos = fundirRegistos(servicos, servicosRemotos, mapearServicoDoServidor, idsServicosServidor, SyncManager.idsPendentes('servicos'));
+        StorageAdapter.set(KEY_SERVICOS_SERVIDOR, JSON.stringify(Array.from(idsServicosServidor)));
         mudou = true;
       }
       if(gastosRemotos){
-        gastos = fundirRegistos(gastos, gastosRemotos, mapearGastoDoServidor);
+        gastos = fundirRegistos(gastos, gastosRemotos, mapearGastoDoServidor, idsGastosServidor, SyncManager.idsPendentes('gastos'));
+        StorageAdapter.set(KEY_GASTOS_SERVIDOR, JSON.stringify(Array.from(idsGastosServidor)));
         mudou = true;
       }
       let mudouPerfil = false;
@@ -1764,11 +1787,26 @@
     };
   }
 
-  function fundirRegistos(locais, remotos, mapear){
+  /* Funde os registos locais com os que vêm do Supabase. Continua a regra
+     original — para cada registo, ganha quem tiver "updatedAt" mais
+     recente — e adiciona a propagação de EXCLUSÕES feitas noutro
+     aparelho: um registo que já esteve confirmado no servidor
+     (idsConhecidosServidor) e que já não vem no SELECT atual foi apagado
+     noutro aparelho, e por isso também é removido aqui. Um registo que
+     ainda está na fila de saída deste aparelho (idsPendentes, ainda não
+     confirmado no Supabase) nunca é removido, mesmo que não apareça no
+     SELECT — para nunca apagar algo que foi criado localmente e ainda
+     não chegou a ser enviado. idsConhecidosServidor é atualizado in-place
+     com os ids vistos nesta sincronização, para que o próximo ciclo saiba
+     que também estes já foram confirmados no servidor. */
+  function fundirRegistos(locais, remotos, mapear, idsConhecidosServidor, idsPendentes){
     const porId = {};
     locais.forEach(r => { porId[r.id] = r; });
+    const idsRemotos = new Set();
     remotos.forEach(linhaRemota => {
       const remotoConvertido = mapear(linhaRemota);
+      idsRemotos.add(remotoConvertido.id);
+      idsConhecidosServidor.add(remotoConvertido.id);
       const local = porId[remotoConvertido.id];
       if(!local){
         porId[remotoConvertido.id] = remotoConvertido; // só existe no servidor
@@ -1779,6 +1817,13 @@
         porId[remotoConvertido.id] = remotoConvertido; // servidor é mais recente
       }
       // se o local for mais recente ou igual, mantém o local como está
+    });
+    Object.keys(porId).forEach(id => {
+      if(idsRemotos.has(id)) return; // ainda existe no servidor
+      if(idsPendentes.has(id)) return; // ainda não foi enviado — nunca se apaga às cegas
+      if(idsConhecidosServidor.has(id)){
+        delete porId[id]; // já esteve confirmado no servidor e já não está lá: apagado noutro aparelho
+      }
     });
     return Object.values(porId);
   }

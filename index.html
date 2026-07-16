@@ -1478,9 +1478,10 @@
       }
       if(tabela === 'perfil'){
         return {
-          id: userId, colaboradores: registo.colaboradores || null,
+          colaboradores: registo.colaboradores || null,
           dados_pagamento: registo.dadosPagamento || null,
-          perfil_atualizado_em: atualizado
+          perfil_atualizado_em: atualizado,
+          updated_at: atualizado
         };
       }
       return {
@@ -1515,13 +1516,21 @@
         } else {
           pedido = client.from(nomeTabela).upsert(mapearParaSupabase(item.tabela, item.payload));
         }
-      }catch(e){ aoTerminar(); return; } // nunca deixa um erro de sync afetar o resto da app
+      }catch(e){ processarSequencial(client, index + 1, aoTerminar); return; } // este item falhou a preparar-se, avança para o seguinte
       pedido.then(function(res){
-        if(res && res.error){ aoTerminar(); return; } // falhou, tenta de novo mais tarde
+        if(res && res.error){
+          // Este item específico falhou (ex.: sem internet a meio, erro do
+          // servidor) — fica na fila para a próxima tentativa, mas NÃO trava
+          // os restantes itens: passa ao seguinte na mesma ronda, para que um
+          // único item com problemas nunca impeça os outros (ex.: o perfil)
+          // de serem sincronizados.
+          processarSequencial(client, index + 1, aoTerminar);
+          return;
+        }
         const restante = lerFila().filter(f => !(f.id === item.id && f.operacao === item.operacao));
         gravarFila(restante);
-        processarSequencial(client, 0, aoTerminar);
-      }).catch(function(){ aoTerminar(); });
+        processarSequencial(client, 0, aoTerminar); // a fila encolheu, recomeça do início
+      }).catch(function(){ processarSequencial(client, index + 1, aoTerminar); });
     }
 
     function puxarDoServidor(callback){

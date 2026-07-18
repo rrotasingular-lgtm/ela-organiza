@@ -30,13 +30,16 @@
     --shadow-sm:0 2px 8px rgba(47,109,115,0.06);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-  html,body{margin:0;padding:0;}
+  html,body{margin:0;padding:0; height:100%; overflow:hidden;}
   body{
     font-family:'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background:var(--bg);
     color:var(--text);
     min-height:100vh;
+    min-height:100dvh;
     -webkit-font-smoothing:antialiased;
+    position:fixed;
+    inset:0;
   }
   button{font-family:inherit; cursor:pointer;}
   input, textarea, select{font-family:inherit;}
@@ -116,7 +119,7 @@
   .settings-col{display:flex; flex-direction:column; align-items:center; gap:3px;}
   .sync-dot{font-size:8px; line-height:1; user-select:none;}
 
-  main{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 20px 24px;}
+  main{flex:1; min-height:0; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:6px 20px calc(80px + env(safe-area-inset-bottom));}
 
   h1.page-title{
     font-size:22px; font-weight:700; margin:8px 0 18px; letter-spacing:-0.01em;
@@ -297,7 +300,10 @@
 
   /* BOTTOM NAV */
   nav.tabbar{
-    flex-shrink:0;
+    position:fixed;
+    left:0; right:0; bottom:0;
+    max-width:560px;
+    margin:0 auto;
     background:rgba(255,255,255,0.92);
     backdrop-filter:blur(14px);
     -webkit-backdrop-filter:blur(14px);
@@ -306,6 +312,17 @@
     width:100%;
     padding:8px 4px calc(8px + env(safe-area-inset-bottom));
     z-index:30;
+    /* Sem isto, o Safari do iPhone às vezes "atrasa" o repaint deste
+       elemento durante o gesto de arrastar (por causa da barra de
+       endereço a esconder/mostrar), dando a sensação de que a barra
+       flutua/acompanha o dedo em vez de ficar realmente parada. Forçar
+       uma camada de composição própria (GPU) resolve isso porque o
+       elemento deixa de ser repintado junto com o resto da página a
+       cada frame do gesto.
+    */
+    transform:translateZ(0);
+    -webkit-transform:translateZ(0);
+    will-change:transform;
   }
   .tab-btn{
     flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
@@ -3082,13 +3099,31 @@
         StorageAdapter.set(KEY_CHAVE_ATIVA, "");
         location.reload();
       }
-      loadSupabase(function(client){
-        client.auth.signOut().then(sairParaLogin).catch(sairParaLogin);
-      });
-      // Se o Supabase não carregar (ex: sem internet), ainda assim sai
-      // localmente pouco depois, para a utilizadora ver a mensagem de
-      // confirmação antes do ecrã mudar.
-      setTimeout(sairParaLogin, 900);
+
+      // Antes de sair, dá tempo para a fila de sincronização (a remoção
+      // dos serviços/gastos antigos e a reposição do perfil) realmente
+      // chegar ao Supabase. Sem isto, o reload a seguir podia interromper
+      // esses pedidos a meio do caminho — o pedido nunca chegava ao
+      // servidor, mas como o item já lá estava na fila local, ficava
+      // "preso" e só era reenviado na próxima vez que esta conta abrisse
+      // neste aparelho — daí o sinal vermelho a persistir e o outro
+      // aparelho nunca receber a reposição do perfil. Espera até a fila
+      // esvaziar (sinal verde) ou, no máximo, uns segundos — por exemplo
+      // se estiver offline neste preciso momento — caso em que a fila
+      // fica guardada e será reenviada sozinha assim que houver ligação.
+      let tentativasEspera = 0;
+      const maxTentativasEspera = 20; // 20 x 300ms = 6s no máximo
+      (function esperarFilaEsvaziar(){
+        const offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+        if(SyncManager.estaSincronizado() || offline || tentativasEspera >= maxTentativasEspera){
+          loadSupabase(function(client){
+            client.auth.signOut().then(sairParaLogin).catch(sairParaLogin);
+          }, sairParaLogin);
+          return;
+        }
+        tentativasEspera++;
+        setTimeout(esperarFilaEsvaziar, 300);
+      })();
     });
   }
 

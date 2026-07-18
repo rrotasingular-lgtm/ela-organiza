@@ -1515,7 +1515,17 @@
           pedido = client.from(nomeTabela).delete().eq('id', item.id).eq('user_id', userId);
         } else if(item.tabela === 'perfil'){
           // profiles usa 'id' como chave (é o próprio userId), sem coluna user_id.
-          pedido = client.from(nomeTabela).update(mapearParaSupabase(item.tabela, item.payload)).eq('id', userId);
+          // Pede de volta a linha alterada (.select('id')) para conseguir
+          // detetar o caso em que o UPDATE "funciona" (sem erro) mas não
+          // altera nenhuma linha — o que acontece, por exemplo, quando a
+          // política de RLS para UPDATE em profiles é mais restritiva do
+          // que a de SELECT, ou quando por algum motivo ainda não existe
+          // linha para este userId. Nesse caso o Supabase costuma devolver
+          // sucesso com uma lista vazia em vez de um erro, e sem esta
+          // verificação a fila via isso como "sincronizado" mesmo sem nada
+          // ter mudado no servidor — exatamente o sintoma de "está
+          // verdinho, mas o outro aparelho nunca recebe a alteração".
+          pedido = client.from(nomeTabela).update(mapearParaSupabase(item.tabela, item.payload)).eq('id', userId).select('id');
         } else {
           pedido = client.from(nomeTabela).upsert(mapearParaSupabase(item.tabela, item.payload));
         }
@@ -1530,6 +1540,25 @@
           // ver o erro real do Supabase (RLS, coluna em falta, etc.).
           console.warn('[sync] falha ao gravar no Supabase — tabela:', item.tabela, 'operação:', item.operacao, 'erro:', res.error);
           processarSequencial(client, index + 1, aoTerminar);
+          return;
+        }
+        if(item.tabela === 'perfil' && Array.isArray(res && res.data) && res.data.length === 0){
+          // O UPDATE não encontrou/alterou nenhuma linha. Em vez de dar a
+          // sincronização como concluída às cegas (ficando "verdinho" sem
+          // nada ter chegado ao servidor), tenta um upsert de reserva —
+          // que faz INSERT quando a linha ainda não existe — desta vez
+          // incluindo o id explicitamente.
+          client.from('profiles').upsert(Object.assign({ id: userId }, mapearParaSupabase('perfil', item.payload)))
+            .then(function(res2){
+              if(res2 && res2.error){
+                console.warn('[sync] upsert de reserva do perfil também falhou — verificar policy de INSERT/UPDATE em profiles:', res2.error);
+                processarSequencial(client, index + 1, aoTerminar);
+                return;
+              }
+              const restante2 = lerFila().filter(f => !(f.id === item.id && f.operacao === item.operacao));
+              gravarFila(restante2);
+              processarSequencial(client, 0, aoTerminar);
+            }).catch(function(){ processarSequencial(client, index + 1, aoTerminar); });
           return;
         }
         const restante = lerFila().filter(f => !(f.id === item.id && f.operacao === item.operacao));
@@ -3015,12 +3044,51 @@
       gastos = [];
       persist();
       persistGastos();
+
+      // "Apagar dados do perfil atual" tem de apagar tudo o que foi
+      // inserido ou alterado no perfil — não só serviços/gastos, mas
+      // também nomes de colaboradores e dados de pagamento. Repõe os
+      // valores por omissão e usa persistColab()/persistDadosPagamento()
+      // (já existentes) para gravar localmente e enfileirar a mesma
+      // reposição para o Supabase, para que o perfil remoto também fique
+      // zerado.
+      colaboradores = {
+        eu: I18n.t('colaboradores.padrao.eu'),
+        colab1: I18n.t('colaboradores.padrao.colab1'),
+        colab2: I18n.t('colaboradores.padrao.colab2'),
+        colab3: I18n.t('colaboradores.padrao.colab3')
+      };
+      dadosPagamento = '';
+      persistColab();
+      persistDadosPagamento();
+
+      // Remove por completo, do armazenamento local, todas as restantes
+      // chaves deste perfil (backup, primeiro uso, lembrete adiado, ids
+      // já sincronizados) para que não sobre nenhum vestígio e a próxima
+      // entrada nesta conta comece de uma conta realmente zerada, como
+      // se fosse nova.
+      [KEY_BACKUP, KEY_PRIMEIRO_USO, KEY_LEMBRETE_ADIADO, KEY_SERVICOS_SERVIDOR, KEY_GASTOS_SERVIDOR]
+        .forEach(k => StorageAdapter.remove(k));
+
       closeSheet();
-      renderPainel();
-      renderHistorico();
-      renderGastos();
-      renderRelatorio();
       toast(I18n.t('toast.dados.apagados'));
+
+      // Depois de apagar, termina a sessão e volta ao ecrã de login —
+      // tal como "Sair da conta" (trocarUtilizador/limparESair) — para
+      // que a utilizadora não fique num ecrã com uma conta que acabou de
+      // ser esvaziada, e a próxima entrada comece mesmo do zero.
+      function sairParaLogin(){
+        SyncManager.parar();
+        StorageAdapter.set(KEY_CHAVE_ATIVA, "");
+        location.reload();
+      }
+      loadSupabase(function(client){
+        client.auth.signOut().then(sairParaLogin).catch(sairParaLogin);
+      });
+      // Se o Supabase não carregar (ex: sem internet), ainda assim sai
+      // localmente pouco depois, para a utilizadora ver a mensagem de
+      // confirmação antes do ecrã mudar.
+      setTimeout(sairParaLogin, 900);
     });
   }
 
